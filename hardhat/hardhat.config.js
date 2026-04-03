@@ -1,16 +1,15 @@
-require("@nomicfoundation/hardhat-toolbox");
 require("@nomiclabs/hardhat-ethers");
-require("hardhat-deploy");
-require("dotenv").config();
+require("dotenv").config({ path: "../.env.local" });
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "0x0000000000000000000000000000000000000000000000000000000000000000";
-const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "";
 const INFURA_API_KEY = process.env.INFURA_API_KEY || "";
+const SKALE_RPC_URL = process.env.SKALE_RPC_URL || "https://base-sepolia-testnet.skalenodes.com/v1/jubilant-horrible-ancha";
 
 module.exports = {
   solidity: {
-    version: "0.8.10",
+    version: "0.8.19",
     settings: {
+      viaIR: true,
       optimizer: {
         enabled: true,
         runs: 200,
@@ -18,19 +17,21 @@ module.exports = {
     },
   },
   networks: {
-    hardhat: {
-      chainId: 1337,
-    },
-    ganache: {
-      url: "http://127.0.0.1:7545",
+    // SKALE Base (using the RPC from bezy-tests)
+    skaleBaseTestnet: {
+      url: SKALE_RPC_URL,
       accounts: [PRIVATE_KEY],
-      chainId: 5777,
+      chainId: 324705682,
+      gasPrice: "auto",
     },
-    localhost: {
-      url: "http://127.0.0.1:8545",
+    // For actual SKALE testnet (if needed in future)
+    skaleTestnet: {
+      url: "https://staging-v2.skalenodes.com:10200",
       accounts: [PRIVATE_KEY],
-      chainId: 31337,
+      chainId: 1444673419,
+      gasPrice: "auto",
     },
+    // Sepolia for comparison
     sepolia: {
       url: `https://sepolia.infura.io/v3/${INFURA_API_KEY}`,
       accounts: [PRIVATE_KEY],
@@ -51,36 +52,11 @@ module.exports = {
       accounts: [PRIVATE_KEY],
       chainId: 80001,
     },
-    skaleTestnet: {
-      url: "https://staging-v2.skalenodes.com:10200",
-      accounts: [PRIVATE_KEY],
-      chainId: 1444673419,
-    },
-    skaleBase: {
-      url: "https://mainnet.skalenodes.com/v1/elated-tan-skat",
-      accounts: [PRIVATE_KEY],
-      chainId: 324705682,
-    },
-  },
-  etherscan: {
-    apiKey: ETHERSCAN_API_KEY,
   },
   paths: {
     sources: "./contracts",
     tests: "./test",
     cache: "./cache",
     artifacts: "./artifacts",
-  },
-  namedAccounts: {
-    deployer: {
-      default: 0,
-    },
-    admin: {
-      default: 0,
-    },
-  },
-  gasReporter: {
-    enabled: process.env.REPORT_GAS === "true",
-    currency: "USD",
   },
 };
