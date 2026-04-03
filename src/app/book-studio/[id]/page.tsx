@@ -1,0 +1,452 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { Calendar, Clock, ArrowLeft, Share2, Check, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
+import toast from 'react-hot-toast';
+import { useParams } from 'next/navigation';
+
+interface Property {
+  id: string;
+  name: string;
+  city: string;
+  description: string;
+  imageUrl: string;
+  hourlyRate: number;
+  dailyRate: number;
+  valuationUsd: number;
+  annualYieldPercentage: number;
+  maxShareSupply: number;
+}
+
+export default function BookPropertyPage() {
+  const params = useParams();
+  const propertyId = params.id as string;
+  const [property, setProperty] = useState<Property | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [bookingType, setBookingType] = useState<'hourly' | 'daily'>('hourly');
+  const [selectedDate, setSelectedDate] = useState('');
+  const [startTime, setStartTime] = useState('09:00');
+  const [hours, setHours] = useState(1);
+  const [days, setDays] = useState(1);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    fetchProperty();
+  }, [propertyId]);
+
+  const fetchProperty = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/homedao/properties/${propertyId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setProperty(data);
+      } else {
+        toast.error('Property not found');
+      }
+    } catch (error) {
+      console.error('Error fetching property:', error);
+      toast.error('Failed to load property');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 flex items-center justify-center">
+        <p className="text-gray-800 text-lg">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!property) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 flex items-center justify-center p-4">
+        <div className="text-center">
+          <p className="text-gray-800 text-lg mb-4">Property not found</p>
+          <Link href="/invest" className="text-[#D946EF] hover:underline">
+            Back to Properties
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const calculateBookingTotal = () => {
+    if (bookingType === 'hourly') {
+      return hours * property.hourlyRate;
+    } else {
+      return days * property.dailyRate;
+    }
+  };
+
+  const handleDateSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedDate(e.target.value);
+  };
+
+  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!selectedDate || !formData.name || !formData.email || !formData.phone) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Create booking record
+      const bookingResponse = await fetch('/api/homedao/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          propertyId: property.id,
+          propertyName: property.name,
+          bookingType,
+          startDate: selectedDate,
+          startTime: bookingType === 'hourly' ? startTime : '00:00',
+          duration: bookingType === 'hourly' ? hours : days,
+          durationUnit: bookingType === 'hourly' ? 'hours' : 'days',
+          totalPrice: calculateBookingTotal(),
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+        }),
+      });
+
+      if (bookingResponse.ok) {
+        const booking = await bookingResponse.json();
+
+        // Create Stripe checkout session
+        const stripeResponse = await fetch('/api/homedao/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bookingId: booking.id || propertyId,
+            propertyName: property.name,
+            amount: calculateBookingTotal(),
+            email: formData.email,
+            bookingDetails: {
+              date: selectedDate,
+              time: bookingType === 'hourly' ? startTime : 'All day',
+              duration: `${bookingType === 'hourly' ? hours : days} ${bookingType === 'hourly' ? 'hour(s)' : 'day(s)'}`,
+            },
+          }),
+        });
+
+        if (stripeResponse.ok) {
+          const { url } = await stripeResponse.json();
+          if (url) {
+            window.location.href = url;
+          } else {
+            toast.success('Booking confirmed! Payment details will be sent to your email.');
+            setTimeout(() => {
+              window.history.back();
+            }, 2000);
+          }
+        } else {
+          toast.success('Booking created! Payment information has been sent to your email.');
+          setTimeout(() => {
+            window.history.back();
+          }, 2000);
+        }
+      } else {
+        toast.error('Failed to create booking');
+      }
+    } catch (error) {
+      console.error('Booking error:', error);
+      toast.error('Error processing booking');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const getTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-white to-gray-50">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-[#D946EF] to-pink-400 text-white py-4 sm:py-6">
+        <div className="max-w-4xl mx-auto px-4 sm:px-8">
+          <Link href={`/property/${propertyId}`} className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-3 sm:mb-4 text-sm sm:text-base">
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            Back to Property
+          </Link>
+          <h1 className="text-2xl sm:text-4xl font-bold">{property.name}</h1>
+          <p className="text-white/90 text-sm sm:text-base">{property.city}</p>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-8 py-6 sm:py-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+          {/* Booking Form */}
+          <div className="lg:col-span-2">
+            <form onSubmit={handleBookingSubmit} className="space-y-6 sm:space-y-8">
+              {/* Booking Type & Date */}
+              <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-8">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
+                  <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-[#D946EF]" />
+                  Select Date & Time
+                </h2>
+
+                {/* Booking Type Selection */}
+                <div className="mb-6 sm:mb-8">
+                  <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-3 sm:mb-4">Booking Type</label>
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setBookingType('hourly')}
+                      className={`p-3 sm:p-4 border-2 rounded-lg transition text-sm sm:text-base ${
+                        bookingType === 'hourly'
+                          ? 'border-[#D946EF] bg-[#D946EF]/10'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <Clock className="w-5 h-5 sm:w-5 sm:h-5 mx-auto mb-2 text-[#D946EF]" />
+                      <div className="font-bold text-gray-900">Hourly</div>
+                      <div className="text-xs sm:text-sm text-gray-600">${property.hourlyRate}/hr</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setBookingType('daily')}
+                      className={`p-3 sm:p-4 border-2 rounded-lg transition text-sm sm:text-base ${
+                        bookingType === 'daily'
+                          ? 'border-[#D946EF] bg-[#D946EF]/10'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <Calendar className="w-5 h-5 sm:w-5 sm:h-5 mx-auto mb-2 text-[#D946EF]" />
+                      <div className="font-bold text-gray-900">Daily</div>
+                      <div className="text-xs sm:text-sm text-gray-600">${property.dailyRate}/day</div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Date Selection */}
+                <div className="mb-6 sm:mb-8">
+                  <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-2">Select Date</label>
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={handleDateSelect}
+                    min={getTodayDate()}
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D946EF] focus:border-transparent text-sm sm:text-base"
+                    required
+                  />
+                </div>
+
+                {/* Time & Duration */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  {bookingType === 'hourly' && (
+                    <>
+                      <div>
+                        <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-2">Start Time</label>
+                        <input
+                          type="time"
+                          value={startTime}
+                          onChange={(e) => setStartTime(e.target.value)}
+                          className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D946EF] focus:border-transparent text-sm sm:text-base"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-2">Duration (Hrs)</label>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setHours(Math.max(1, hours - 1))}
+                            className="px-2 sm:px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm font-bold"
+                          >
+                            −
+                          </button>
+                          <input
+                            type="number"
+                            min="1"
+                            max="24"
+                            value={hours}
+                            onChange={(e) => setHours(Math.max(1, parseInt(e.target.value) || 1))}
+                            className="flex-1 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-center text-sm sm:text-base"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setHours(Math.min(24, hours + 1))}
+                            className="px-2 sm:px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm font-bold"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {bookingType === 'daily' && (
+                    <div className="col-span-1 sm:col-span-2">
+                      <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-2">Number of Days</label>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setDays(Math.max(1, days - 1))}
+                          className="px-2 sm:px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm font-bold"
+                        >
+                          −
+                        </button>
+                        <input
+                          type="number"
+                          min="1"
+                          max="365"
+                          value={days}
+                          onChange={(e) => setDays(Math.max(1, parseInt(e.target.value) || 1))}
+                          className="flex-1 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-center text-sm sm:text-base"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setDays(Math.min(365, days + 1))}
+                          className="px-2 sm:px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 text-sm font-bold"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Contact Information */}
+              <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-8">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Contact Info</h2>
+
+                <div className="space-y-3 sm:space-y-4">
+                  <div>
+                    <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1 sm:mb-2">Full Name *</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleFormChange}
+                      placeholder="John Doe"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D946EF] focus:border-transparent text-sm sm:text-base"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1 sm:mb-2">Email *</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleFormChange}
+                      placeholder="john@example.com"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D946EF] focus:border-transparent text-sm sm:text-base"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-1 sm:mb-2">Phone *</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleFormChange}
+                      placeholder="+1 (555) 000-0000"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D946EF] focus:border-transparent text-sm sm:text-base"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isSubmitting || !selectedDate || !formData.name || !formData.email || !formData.phone}
+                className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-gradient-to-r from-[#D946EF] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#D946EF]/30 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
+              >
+                {isSubmitting ? 'Processing...' : 'Proceed to Payment'}
+                <Check className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            </form>
+          </div>
+
+          {/* Booking Summary - Sticky on desktop, below form on mobile */}
+          <div className="lg:col-span-1">
+            <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 lg:sticky lg:top-8">
+              <h3 className="text-lg sm:text-lg font-bold text-gray-900 mb-4 sm:mb-6">Summary</h3>
+
+              <div className="space-y-3 sm:space-y-4 pb-4 sm:pb-6 border-b border-gray-200 text-sm sm:text-base">
+                <div>
+                  <p className="text-gray-600 text-xs sm:text-sm">Property</p>
+                  <p className="font-bold text-gray-900">{property.name}</p>
+                </div>
+
+                <div>
+                  <p className="text-gray-600 text-xs sm:text-sm">Type</p>
+                  <p className="font-bold text-gray-900 capitalize">{bookingType}</p>
+                </div>
+
+                {selectedDate && (
+                  <div>
+                    <p className="text-gray-600 text-xs sm:text-sm">Date</p>
+                    <p className="font-bold text-gray-900 text-sm sm:text-base">
+                      {new Date(selectedDate).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </p>
+                  </div>
+                )}
+
+                {bookingType === 'hourly' && (
+                  <>
+                    <div>
+                      <p className="text-gray-600 text-xs sm:text-sm">Time</p>
+                      <p className="font-bold text-gray-900">{startTime}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600 text-xs sm:text-sm">Duration</p>
+                      <p className="font-bold text-gray-900">{hours}h</p>
+                    </div>
+                  </>
+                )}
+
+                {bookingType === 'daily' && (
+                  <div>
+                    <p className="text-gray-600 text-xs sm:text-sm">Duration</p>
+                    <p className="font-bold text-gray-900">{days}d</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Price */}
+              <div className="py-4 sm:py-6 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-base sm:text-lg font-bold text-gray-900">Total</span>
+                  <span className="text-2xl sm:text-2xl font-bold text-[#D946EF]">${calculateBookingTotal()}</span>
+                </div>
+                <p className="text-xs text-gray-600">Secure payment via Stripe</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

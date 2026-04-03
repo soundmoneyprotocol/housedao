@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { MapPin, TrendingUp, Vote, Share2, Calendar } from 'lucide-react';
+import { MapPin, TrendingUp, Vote, Share2, Calendar, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 
 interface Property {
   id: string;
-  blockchainId: number;
+  blockchainId?: number;
   name: string;
   city: string;
   latitude: string;
@@ -16,10 +16,13 @@ interface Property {
   imageUrl: string;
   valuationUsd: number;
   annualYieldPercentage: number;
-  sharesOutstanding: number;
+  sharesOutstanding?: number;
   maxShareSupply: number;
   isArtistHouse: boolean;
-  createdAt: string;
+  isBookable?: boolean;
+  hourlyRate?: number;
+  dailyRate?: number;
+  createdAt?: string;
 }
 
 interface PropertyWithMetrics extends Property {
@@ -30,7 +33,6 @@ interface PropertyWithMetrics extends Property {
 }
 
 export default function InvestPage() {
-  // const user = useUserStore((state) => state.user);
   const [properties, setProperties] = useState<PropertyWithMetrics[]>([]);
   const [filteredProperties, setFilteredProperties] = useState<PropertyWithMetrics[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,13 +50,13 @@ export default function InvestPage() {
     try {
       const response = await fetch('/api/homedao/properties');
       if (response.ok) {
-        const data: Property[] = await response.json();
+        const data = await response.json();
 
-        // Calculate metrics for each property
-        const withMetrics = data.map((prop) => {
-          const availableShares = prop.maxShareSupply - prop.sharesOutstanding;
-          const pricePerShare = (prop.valuationUsd / 100) / prop.maxShareSupply; // Convert from cents
-          const yearlyReturn = (prop.valuationUsd / 100) * (prop.annualYieldPercentage / 10000);
+        const withMetrics = data.properties.map((prop: Property) => {
+          const sharesOutstanding = prop.sharesOutstanding || 0;
+          const availableShares = prop.maxShareSupply - sharesOutstanding;
+          const pricePerShare = prop.valuationUsd > 0 ? (prop.valuationUsd / 100) / prop.maxShareSupply : 0;
+          const yearlyReturn = prop.valuationUsd > 0 ? (prop.valuationUsd / 100) * (prop.annualYieldPercentage / 10000) : 0;
           const roi = prop.annualYieldPercentage / 100;
 
           return {
@@ -120,12 +122,23 @@ export default function InvestPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-900 to-neutral-950">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#FD7125] to-orange-500 p-8 text-white">
+      <div className="bg-gradient-to-r from-[#D946EF] to-pink-500 p-8 text-white">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold mb-2">HouseDAO: Invest in Real Estate</h1>
-          <p className="text-lg opacity-90">
+          <h1 className="text-4xl font-bold mb-4">HouseDAO: Invest in Real Estate</h1>
+          <p className="text-lg opacity-90 mb-4">
             Own fractional shares in premium properties and participate in DAO governance
           </p>
+          <div className="flex gap-3">
+            <button className="px-4 py-2 bg-white/20 rounded-lg font-medium hover:bg-white/30 transition">
+              All Properties
+            </button>
+            <Link
+              href="/recently-listed"
+              className="px-4 py-2 bg-white/20 rounded-lg font-medium hover:bg-white/30 transition"
+            >
+              Recently Listed
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -145,7 +158,7 @@ export default function InvestPage() {
                 onChange={(e) =>
                   handleFilterChange(e.target.value, filterMinROI, filterArtistHouses)
                 }
-                className="w-full px-4 py-2 rounded-lg bg-neutral-700 text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#FD7125]"
+                className="w-full px-4 py-2 rounded-lg bg-neutral-700 text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#D946EF]"
               />
             </div>
 
@@ -159,7 +172,7 @@ export default function InvestPage() {
                 onChange={(e) =>
                   handleFilterChange(filterCity, parseFloat(e.target.value), filterArtistHouses)
                 }
-                className="w-full px-4 py-2 rounded-lg bg-neutral-700 text-white focus:outline-none focus:ring-2 focus:ring-[#FD7125]"
+                className="w-full px-4 py-2 rounded-lg bg-neutral-700 text-white focus:outline-none focus:ring-2 focus:ring-[#D946EF]"
               >
                 <option value="0">All ROIs</option>
                 <option value="3">3%+</option>
@@ -178,7 +191,7 @@ export default function InvestPage() {
                   onChange={(e) =>
                     handleFilterChange(filterCity, filterMinROI, e.target.checked)
                   }
-                  className="w-5 h-5 rounded bg-neutral-700 border-neutral-600 text-[#FD7125] focus:ring-2 focus:ring-[#FD7125]"
+                  className="w-5 h-5 rounded bg-neutral-700 border-neutral-600 text-[#D946EF] focus:ring-2 focus:ring-[#D946EF]"
                 />
                 <span className="text-sm font-medium text-neutral-300">Artist Houses Only</span>
               </label>
@@ -188,7 +201,7 @@ export default function InvestPage() {
             <div className="flex items-end">
               <Link
                 href="/list-property"
-                className="w-full py-2 px-4 bg-gradient-to-r from-[#FD7125] to-orange-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#FD7125]/50 transition text-center"
+                className="w-full py-2 px-4 bg-gradient-to-r from-[#D946EF] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#D946EF]/50 transition text-center"
               >
                 + List Property
               </Link>
@@ -220,7 +233,7 @@ export default function InvestPage() {
       </div>
 
       {/* Investment Modal */}
-      {showInvestModal && selectedProperty && (
+      {showInvestModal && selectedProperty && selectedProperty.valuationUsd > 0 && (
         <InvestmentModal
           property={selectedProperty}
           onClose={() => setShowInvestModal(false)}
@@ -242,7 +255,7 @@ interface PropertyCardProps {
 
 function PropertyCard({ property, onInvest }: PropertyCardProps) {
   return (
-    <div className="bg-neutral-800 border border-neutral-700 rounded-xl overflow-hidden hover:border-[#FD7125] transition">
+    <div className="bg-neutral-800 border border-neutral-700 rounded-xl overflow-hidden hover:border-[#D946EF] transition">
       {/* Image */}
       <div className="h-48 bg-gradient-to-br from-neutral-700 to-neutral-900 overflow-hidden">
         {property.imageUrl ? (
@@ -270,7 +283,7 @@ function PropertyCard({ property, onInvest }: PropertyCardProps) {
             </p>
           </div>
           {property.isArtistHouse && (
-            <div className="bg-[#FD7125]/20 text-[#FD7125] px-3 py-1 rounded-full text-xs font-bold">
+            <div className="bg-[#D946EF]/20 text-[#D946EF] px-3 py-1 rounded-full text-xs font-bold">
               Artist House
             </div>
           )}
@@ -279,88 +292,104 @@ function PropertyCard({ property, onInvest }: PropertyCardProps) {
         {/* Description */}
         <p className="text-neutral-400 text-sm mb-4 line-clamp-2">{property.description}</p>
 
-        {/* Metrics Row 1 */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          {/* ROI */}
-          <div className="bg-neutral-700/50 rounded-lg p-3">
-            <p className="text-xs text-neutral-400">Annual ROI</p>
-            <p className="text-xl font-bold text-[#FD7125]">{property.roi.toFixed(1)}%</p>
-          </div>
-
-          {/* Price per Share */}
-          <div className="bg-neutral-700/50 rounded-lg p-3">
-            <p className="text-xs text-neutral-400">Share Price</p>
-            <p className="text-lg font-bold text-white">${property.pricePerShare.toFixed(2)}</p>
-          </div>
-
-          {/* Available Shares */}
-          <div className="bg-neutral-700/50 rounded-lg p-3">
-            <p className="text-xs text-neutral-400">Available</p>
-            <p className="text-lg font-bold text-white">{property.availableShares}</p>
-          </div>
-        </div>
-
-        {/* Metrics Row 2 */}
-        <div className="grid grid-cols-2 gap-3 mb-5">
-          {/* Yearly Return */}
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-green-500" />
-            <div className="flex-1">
-              <p className="text-xs text-neutral-400">Yearly Return</p>
-              <p className="text-sm font-bold text-white">
-                ${property.yearlyReturn.toFixed(0)}/yr
-              </p>
+        {/* Info */}
+        {property.valuationUsd > 0 ? (
+          <>
+            {/* Investment Property */}
+            <div className="grid grid-cols-3 gap-3 mb-4">
+              <div className="bg-neutral-700/50 rounded-lg p-3">
+                <p className="text-xs text-neutral-400">Annual ROI</p>
+                <p className="text-xl font-bold text-[#D946EF]">{property.roi.toFixed(1)}%</p>
+              </div>
+              <div className="bg-neutral-700/50 rounded-lg p-3">
+                <p className="text-xs text-neutral-400">Share Price</p>
+                <p className="text-lg font-bold text-white">${property.pricePerShare.toFixed(2)}</p>
+              </div>
+              <div className="bg-neutral-700/50 rounded-lg p-3">
+                <p className="text-xs text-neutral-400">Available</p>
+                <p className="text-lg font-bold text-white">{property.availableShares}</p>
+              </div>
             </div>
-          </div>
 
-          {/* Total Valuation */}
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-blue-500" />
-            <div className="flex-1">
-              <p className="text-xs text-neutral-400">Valuation</p>
-              <p className="text-sm font-bold text-white">
-                ${(property.valuationUsd / 100).toLocaleString()}
-              </p>
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-green-500" />
+                <div className="flex-1">
+                  <p className="text-xs text-neutral-400">Yearly Return</p>
+                  <p className="text-sm font-bold text-white">
+                    ${property.yearlyReturn.toFixed(0)}/yr
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-blue-500" />
+                <div className="flex-1">
+                  <p className="text-xs text-neutral-400">Valuation</p>
+                  <p className="text-sm font-bold text-white">
+                    ${(property.valuationUsd / 1000000).toFixed(1)}M
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Progress Bar */}
-        <div className="mb-4">
-          <div className="flex justify-between items-center mb-2">
-            <p className="text-xs font-medium text-neutral-300">Shares Sold</p>
-            <p className="text-xs text-neutral-400">
-              {property.sharesOutstanding} / {property.maxShareSupply}
-            </p>
-          </div>
-          <div className="w-full bg-neutral-700 rounded-full h-2 overflow-hidden">
-            <div
-              className="bg-gradient-to-r from-[#FD7125] to-orange-400 h-full transition-all"
-              style={{
-                width: `${(property.sharesOutstanding / property.maxShareSupply) * 100}%`,
-              }}
-            />
-          </div>
-        </div>
+            <div className="mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <p className="text-xs font-medium text-neutral-300">Shares Sold</p>
+                <p className="text-xs text-neutral-400">
+                  {property.sharesOutstanding || 0} / {property.maxShareSupply}
+                </p>
+              </div>
+              <div className="w-full bg-neutral-700 rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-[#D946EF] to-pink-400 h-full transition-all"
+                  style={{
+                    width: `${((property.sharesOutstanding || 0) / property.maxShareSupply) * 100}%`,
+                  }}
+                />
+              </div>
+            </div>
 
-        {/* Actions */}
-        <div className="flex gap-3">
-          <button
-            onClick={onInvest}
-            disabled={property.availableShares === 0}
-            className="flex-1 py-2 px-4 bg-gradient-to-r from-[#FD7125] to-orange-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#FD7125]/50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-          >
-            <Share2 className="w-4 h-4 inline mr-2" />
-            Invest
-          </button>
-          <Link
-            href={`/homedao/property/${property.id}`}
-            className="flex-1 py-2 px-4 bg-neutral-700 text-white font-bold rounded-lg hover:bg-neutral-600 transition text-center"
-          >
-            <Vote className="w-4 h-4 inline mr-2" />
-            Vote
-          </Link>
-        </div>
+            <div className="flex gap-3">
+              <button
+                onClick={onInvest}
+                disabled={property.availableShares === 0}
+                className="flex-1 py-2 px-4 bg-gradient-to-r from-[#D946EF] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#D946EF]/50 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
+              >
+                <Share2 className="w-4 h-4 inline mr-2" />
+                Invest
+              </button>
+              <Link
+                href={`/book-studio/${property.id}`}
+                className="flex-1 py-2 px-4 bg-neutral-700 text-white font-bold rounded-lg hover:bg-neutral-600 transition text-center text-sm"
+              >
+                <Clock className="w-4 h-4 inline mr-2" />
+                Book
+              </Link>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Bookable Property Only */}
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              <div className="bg-neutral-700/50 rounded-lg p-3">
+                <p className="text-xs text-neutral-400">Hourly Rate</p>
+                <p className="text-lg font-bold text-[#D946EF]">${property.hourlyRate}</p>
+              </div>
+              <div className="bg-neutral-700/50 rounded-lg p-3">
+                <p className="text-xs text-neutral-400">Daily Rate</p>
+                <p className="text-lg font-bold text-[#D946EF]">${property.dailyRate}</p>
+              </div>
+            </div>
+
+            <Link
+              href={`/book-studio/${property.id}`}
+              className="w-full py-3 px-4 bg-gradient-to-r from-[#D946EF] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#D946EF]/50 transition text-center flex items-center justify-center gap-2"
+            >
+              <Clock className="w-4 h-4" />
+              Book Now
+            </Link>
+          </>
+        )}
       </div>
     </div>
   );
@@ -393,7 +422,7 @@ function InvestmentModal({ property, onClose, onSuccess }: InvestmentModalProps)
         body: JSON.stringify({
           propertyId: property.blockchainId,
           sharesDesired: shares,
-          totalUSD: totalCost * 100, // Convert to cents
+          totalUSD: totalCost * 100,
         }),
       });
 
@@ -414,7 +443,6 @@ function InvestmentModal({ property, onClose, onSuccess }: InvestmentModalProps)
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-neutral-800 border border-neutral-700 rounded-xl max-w-md w-full p-6">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-white">Invest in {property.name}</h2>
           <button
@@ -425,7 +453,6 @@ function InvestmentModal({ property, onClose, onSuccess }: InvestmentModalProps)
           </button>
         </div>
 
-        {/* Details */}
         <div className="space-y-4 mb-6">
           <div className="flex justify-between">
             <span className="text-neutral-400">Price per Share:</span>
@@ -437,11 +464,10 @@ function InvestmentModal({ property, onClose, onSuccess }: InvestmentModalProps)
           </div>
           <div className="flex justify-between">
             <span className="text-neutral-400">Annual ROI:</span>
-            <span className="text-[#FD7125] font-bold">{property.roi.toFixed(1)}%</span>
+            <span className="text-[#D946EF] font-bold">{property.roi.toFixed(1)}%</span>
           </div>
         </div>
 
-        {/* Share Input */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-neutral-300 mb-2">
             Number of Shares
@@ -457,7 +483,7 @@ function InvestmentModal({ property, onClose, onSuccess }: InvestmentModalProps)
               type="number"
               value={shares}
               onChange={(e) => setShares(Math.min(property.availableShares, parseInt(e.target.value) || 0))}
-              className="flex-1 px-4 py-2 bg-neutral-700 text-white rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-[#FD7125]"
+              className="flex-1 px-4 py-2 bg-neutral-700 text-white rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-[#D946EF]"
             />
             <button
               onClick={() => setShares(Math.min(property.availableShares, shares + 1))}
@@ -468,7 +494,6 @@ function InvestmentModal({ property, onClose, onSuccess }: InvestmentModalProps)
           </div>
         </div>
 
-        {/* Summary */}
         <div className="bg-neutral-700/50 rounded-lg p-4 mb-6 space-y-3">
           <div className="flex justify-between">
             <span className="text-neutral-400">Total Investment:</span>
@@ -480,7 +505,6 @@ function InvestmentModal({ property, onClose, onSuccess }: InvestmentModalProps)
           </div>
         </div>
 
-        {/* Buttons */}
         <div className="flex gap-3">
           <button
             onClick={onClose}
@@ -491,7 +515,7 @@ function InvestmentModal({ property, onClose, onSuccess }: InvestmentModalProps)
           <button
             onClick={handleInvest}
             disabled={isLoading}
-            className="flex-1 py-2 px-4 bg-gradient-to-r from-[#FD7125] to-orange-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#FD7125]/50 disabled:opacity-50 transition"
+            className="flex-1 py-2 px-4 bg-gradient-to-r from-[#D946EF] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#D946EF]/50 disabled:opacity-50 transition"
           >
             {isLoading ? 'Processing...' : 'Invest Now'}
           </button>
