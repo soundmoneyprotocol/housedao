@@ -16,7 +16,7 @@ export default function Home() {
       <div className="text-center">
         <h1 className="text-4xl font-bold text-white mb-4">HouseDAO</h1>
         <p className="text-neutral-400 mb-8">Fractional Real Estate Social Network</p>
-        <p className="text-neutral-500">Redirecting to invest page...</p>
+        <p className="text-neutral-500">Loading HouseDAO...</p>
       </div>
     </div>
   );
