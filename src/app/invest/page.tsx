@@ -122,7 +122,7 @@ export default function InvestPage() {
       {/* Header */}
       <div className="bg-gradient-to-r from-[#FD7125] to-orange-500 p-8 text-white">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold mb-2">HomeDAO: Invest in Real Estate</h1>
+          <h1 className="text-4xl font-bold mb-2">HouseDAO: Invest in Real Estate</h1>
           <p className="text-lg opacity-90">
             Own fractional shares in premium properties and participate in DAO governance
           </p>
