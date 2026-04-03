@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { MapPin, TrendingUp, Vote, Share2, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useUserStore } from '@/lib/store/userStore';
 import Link from 'next/link';
 
 interface Property {
@@ -31,7 +30,7 @@ interface PropertyWithMetrics extends Property {
 }
 
 export default function InvestPage() {
-  const user = useUserStore((state) => state.user);
+  // const user = useUserStore((state) => state.user);
   const [properties, setProperties] = useState<PropertyWithMetrics[]>([]);
   const [filteredProperties, setFilteredProperties] = useState<PropertyWithMetrics[]>([]);
   const [loading, setLoading] = useState(true);
