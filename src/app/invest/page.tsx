@@ -187,7 +187,7 @@ export default function InvestPage() {
             {/* List New Property Button */}
             <div className="flex items-end">
               <Link
-                href="/homedao/list-property"
+                href="/list-property"
                 className="w-full py-2 px-4 bg-gradient-to-r from-[#FD7125] to-orange-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#FD7125]/50 transition text-center"
               >
                 + List Property
