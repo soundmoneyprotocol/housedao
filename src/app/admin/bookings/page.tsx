@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Mail, Phone, DollarSign, CheckCircle, Clock, Download, Filter, X, MessageCircle, Share2, Star, CheckIn, Send, MapPin } from 'lucide-react';
+import { Calendar, Mail, Phone, DollarSign, CheckCircle, Clock, Download, Filter, X, MessageCircle, Share2, Star, Send, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface Booking {
