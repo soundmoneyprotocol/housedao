@@ -169,7 +169,7 @@ export default function BookPropertyPage() {
       <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 flex items-center justify-center p-4">
         <div className="text-center">
           <p className="text-gray-800 text-lg mb-4">Property not found</p>
-          <Link href="/invest" className="text-[#D946EF] hover:underline">
+          <Link href="/invest" className="text-[#0891B2] hover:underline">
             Back to Properties
           </Link>
         </div>
@@ -289,14 +289,14 @@ export default function BookPropertyPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 py-4 sm:py-6">
+      <div className="bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white py-4 sm:py-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-8">
-          <Link href={`/property/${propertyId}`} className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">
+          <Link href={`/property/${propertyId}`} className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-3 sm:mb-4 text-sm sm:text-base">
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             Back to Property
           </Link>
-          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">{property.name}</h1>
-          <p className="text-gray-600 text-sm sm:text-base">{property.city}</p>
+          <h1 className="text-2xl sm:text-4xl font-bold">{property.name}</h1>
+          <p className="text-white/90 text-sm sm:text-base">{property.city}</p>
         </div>
       </div>
 
@@ -309,7 +309,7 @@ export default function BookPropertyPage() {
               {/* Booking Type & Date */}
               <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-8">
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
-                  <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-[#D946EF]" />
+                  <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-[#0891B2]" />
                   Select Date & Time
                 </h2>
 
@@ -322,11 +322,11 @@ export default function BookPropertyPage() {
                       onClick={() => setBookingType('hourly')}
                       className={`p-3 sm:p-4 border-2 rounded-lg transition text-sm sm:text-base ${
                         bookingType === 'hourly'
-                          ? 'border-[#D946EF] bg-[#D946EF]/10'
+                          ? 'border-[#0891B2] bg-[#0891B2]/10'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
-                      <Clock className="w-5 h-5 sm:w-5 sm:h-5 mx-auto mb-2 text-[#D946EF]" />
+                      <Clock className="w-5 h-5 sm:w-5 sm:h-5 mx-auto mb-2 text-[#0891B2]" />
                       <div className="font-bold text-gray-900">Hourly</div>
                       <div className="text-xs sm:text-sm text-gray-600">${property.hourlyRate}/hr</div>
                     </button>
@@ -336,11 +336,11 @@ export default function BookPropertyPage() {
                       onClick={() => setBookingType('daily')}
                       className={`p-3 sm:p-4 border-2 rounded-lg transition text-sm sm:text-base ${
                         bookingType === 'daily'
-                          ? 'border-[#D946EF] bg-[#D946EF]/10'
+                          ? 'border-[#0891B2] bg-[#0891B2]/10'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
-                      <Calendar className="w-5 h-5 sm:w-5 sm:h-5 mx-auto mb-2 text-[#D946EF]" />
+                      <Calendar className="w-5 h-5 sm:w-5 sm:h-5 mx-auto mb-2 text-[#0891B2]" />
                       <div className="font-bold text-gray-900">Daily</div>
                       <div className="text-xs sm:text-sm text-gray-600">${property.dailyRate}/day</div>
                     </button>
@@ -355,7 +355,7 @@ export default function BookPropertyPage() {
                     value={selectedDate}
                     onChange={handleDateSelect}
                     min={getTodayDate()}
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D946EF] focus:border-transparent text-sm sm:text-base"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0891B2] focus:border-transparent text-sm sm:text-base"
                     required
                   />
                 </div>
@@ -370,7 +370,7 @@ export default function BookPropertyPage() {
                           type="time"
                           value={startTime}
                           onChange={(e) => setStartTime(e.target.value)}
-                          className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D946EF] focus:border-transparent text-sm sm:text-base"
+                          className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0891B2] focus:border-transparent text-sm sm:text-base"
                         />
                       </div>
                       <div>
@@ -438,7 +438,7 @@ export default function BookPropertyPage() {
               {/* Location Map */}
               <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-8">
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-[#D946EF]" />
+                  <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-[#0891B2]" />
                   Location
                 </h2>
 
@@ -451,12 +451,12 @@ export default function BookPropertyPage() {
                       value={addressSearch}
                       onChange={(e) => setAddressSearch(e.target.value)}
                       placeholder="e.g., '123 Main St, New York, NY' or paste Google Maps link"
-                      className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D946EF] focus:border-transparent text-sm sm:text-base"
+                      className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0891B2] focus:border-transparent text-sm sm:text-base"
                     />
                     <button
                       type="submit"
                       disabled={searchLoading}
-                      className="px-3 sm:px-4 py-2 sm:py-3 bg-[#D946EF] text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#D946EF]/30 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm sm:text-base"
+                      className="px-3 sm:px-4 py-2 sm:py-3 bg-[#0891B2] text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#0891B2]/30 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm sm:text-base"
                     >
                       <Search className="w-4 h-4 sm:w-5 sm:h-5" />
                       <span className="hidden sm:inline">Search</span>
@@ -513,7 +513,7 @@ export default function BookPropertyPage() {
                       value={formData.name}
                       onChange={handleFormChange}
                       placeholder="John Doe"
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D946EF] focus:border-transparent text-sm sm:text-base"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0891B2] focus:border-transparent text-sm sm:text-base"
                       required
                     />
                   </div>
@@ -526,7 +526,7 @@ export default function BookPropertyPage() {
                       value={formData.email}
                       onChange={handleFormChange}
                       placeholder="john@example.com"
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D946EF] focus:border-transparent text-sm sm:text-base"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0891B2] focus:border-transparent text-sm sm:text-base"
                       required
                     />
                   </div>
@@ -539,7 +539,7 @@ export default function BookPropertyPage() {
                       value={formData.phone}
                       onChange={handleFormChange}
                       placeholder="+1 (555) 000-0000"
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D946EF] focus:border-transparent text-sm sm:text-base"
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0891B2] focus:border-transparent text-sm sm:text-base"
                       required
                     />
                   </div>
@@ -549,7 +549,7 @@ export default function BookPropertyPage() {
               {/* Message to Venue Owner */}
               <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-8">
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
-                  <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-[#D946EF]" />
+                  <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-[#0891B2]" />
                   Send Message to Venue Owner
                 </h2>
 
@@ -558,7 +558,7 @@ export default function BookPropertyPage() {
                     value={messageToOwner}
                     onChange={(e) => setMessageToOwner(e.target.value)}
                     placeholder="Let the venue owner know about any special requests or questions..."
-                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D946EF] focus:border-transparent text-sm sm:text-base resize-none"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0891B2] focus:border-transparent text-sm sm:text-base resize-none"
                     rows={4}
                   />
                   <p className="text-xs text-gray-500">Optional - Share special requests or questions with the venue owner</p>
@@ -578,7 +578,7 @@ export default function BookPropertyPage() {
               <button
                 type="submit"
                 disabled={isSubmitting || !selectedDate || !formData.name || !formData.email || !formData.phone}
-                className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-gradient-to-r from-[#D946EF] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#D946EF]/30 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
+                className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-gradient-to-r from-[#0891B2] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#0891B2]/30 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
               >
                 {isSubmitting ? 'Processing...' : 'Proceed to Payment'}
                 <Check className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -656,7 +656,7 @@ export default function BookPropertyPage() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-base sm:text-lg font-bold text-gray-900">Total</span>
-                  <span className="text-2xl sm:text-2xl font-bold text-[#D946EF]">${calculateBookingTotal()}</span>
+                  <span className="text-2xl sm:text-2xl font-bold text-[#0891B2]">${calculateBookingTotal()}</span>
                 </div>
                 <p className="text-xs text-gray-600">Secure payment via Stripe</p>
               </div>
