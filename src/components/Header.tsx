@@ -3,12 +3,16 @@
 import React, { useState } from 'react';
 import { Menu, X, User, Settings, LogOut } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, loading, signOut } = useAuth();
 
   const isActive = (path: string) => pathname === path;
 
@@ -18,6 +22,13 @@ export default function Header() {
     { label: 'Membership', href: '/membership' },
     { label: 'About', href: '/about' },
   ];
+
+  const handleLogout = async () => {
+    await signOut();
+    toast.success('Logged out successfully');
+    router.push('/login');
+    setIsProfileOpen(false);
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
@@ -50,47 +61,71 @@ export default function Header() {
 
           {/* Desktop Right Section */}
           <div className="hidden md:flex items-center gap-4">
-            {/* Profile Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition"
-              >
-                <User className="w-5 h-5" />
-                <span className="text-sm font-medium">Profile</span>
-              </button>
-
-              {isProfileOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
-                  <Link href="#" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
-                    My Portfolio
-                  </Link>
-                  <Link href="#" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
-                    My Bookings
-                  </Link>
-                  <Link href="#" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
-                    Messages
-                  </Link>
-                  <hr className="my-2" />
-                  <Link href="#" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
-                    <Settings className="w-4 h-4 inline mr-2" />
-                    Settings
-                  </Link>
-                  <button className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50">
-                    <LogOut className="w-4 h-4 inline mr-2" />
-                    Logout
+            {loading ? (
+              <div className="w-8 h-8 bg-gray-200 rounded-lg animate-pulse" />
+            ) : user ? (
+              <>
+                {/* Profile Dropdown */}
+                <div className="relative">
+                  <button
+                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition"
+                  >
+                    <User className="w-5 h-5" />
+                    <span className="text-sm font-medium">{user.email?.split('@')[0]}</span>
                   </button>
-                </div>
-              )}
-            </div>
 
-            {/* Primary CTA */}
-            <Link
-              href="/list-property"
-              className="px-4 py-2 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg transition"
-            >
-              +
-            </Link>
+                  {isProfileOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg">
+                      <Link href="/portfolio" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
+                        My Portfolio
+                      </Link>
+                      <Link href="/bookings" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
+                        My Bookings
+                      </Link>
+                      <Link href="/messages" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
+                        Messages
+                      </Link>
+                      <hr className="my-2" />
+                      <Link href="/settings" className="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
+                        <Settings className="w-4 h-4 inline mr-2" />
+                        Settings
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        <LogOut className="w-4 h-4 inline mr-2" />
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Primary CTA */}
+                <Link
+                  href="/list-property"
+                  className="px-4 py-2 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg transition"
+                >
+                  +
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="px-4 py-2 text-[#0891B2] font-semibold hover:text-cyan-600 transition"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/signup"
+                  className="px-4 py-2 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg transition"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -126,21 +161,69 @@ export default function Header() {
               ))}
             </div>
             <hr className="my-4" />
-            <Link
-              href="#"
-              className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
-            >
-              My Portfolio
-            </Link>
-            <Link
-              href="#"
-              className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
-            >
-              My Bookings
-            </Link>
+            {user ? (
+              <>
+                <Link
+                  href="/portfolio"
+                  className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  My Portfolio
+                </Link>
+                <Link
+                  href="/bookings"
+                  className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  My Bookings
+                </Link>
+                <Link
+                  href="/messages"
+                  className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Messages
+                </Link>
+                <Link
+                  href="/settings"
+                  className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Settings
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-3 mt-2 text-red-600 hover:bg-red-50 font-medium"
+                >
+                  <LogOut className="w-4 h-4 inline mr-2" />
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/signup"
+                  className="block px-4 py-3 mt-2 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg text-center"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
             <Link
               href="/list-property"
               className="block px-4 py-3 mt-4 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg text-center"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               + Add Property
             </Link>
