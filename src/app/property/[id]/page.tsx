@@ -125,10 +125,16 @@ export default function PropertyDetailPage() {
   const percentageSold = (property.sharesOutstanding / property.maxShareSupply) * 100;
   const availableShares = property.maxShareSupply - property.sharesOutstanding;
 
+  // Miami property uses magenta, all others use cerulean blue
+  const isMiamiProperty = propertyId === '3';
+  const primaryColor = isMiamiProperty ? '#D946EF' : '#0891B2';
+  const secondaryColor = isMiamiProperty ? 'pink-400' : 'cyan-400';
+  const secondaryColorExact = isMiamiProperty ? 'pink-400' : 'cyan-400';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-gray-50">
       {/* Hero Section */}
-      <div className="relative h-56 sm:h-96 bg-gradient-to-r from-[#0891B2] to-cyan-400 overflow-hidden">
+      <div className={`relative h-56 sm:h-96 bg-gradient-to-r overflow-hidden ${isMiamiProperty ? 'from-[#D946EF] to-pink-400' : 'from-[#0891B2] to-cyan-400'}`}>
         {property.imageUrl && (
           <img
             src={property.imageUrl}
@@ -136,7 +142,7 @@ export default function PropertyDetailPage() {
             className="w-full h-full object-cover opacity-30"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0891B2]/80 to-cyan-400/80" />
+        <div className={`absolute inset-0 bg-gradient-to-r ${isMiamiProperty ? 'from-[#D946EF]/80 to-pink-400/80' : 'from-[#0891B2]/80 to-cyan-400/80'}`} />
 
         {/* Back Button */}
         <div className="absolute top-4 sm:top-8 left-4 sm:left-8">
@@ -156,7 +162,7 @@ export default function PropertyDetailPage() {
               </p>
             </div>
             {property.isArtistHouse && (
-              <div className="bg-white text-[#0891B2] px-3 sm:px-4 py-1 sm:py-2 rounded-full font-bold text-xs sm:text-sm whitespace-nowrap flex-shrink-0">
+              <div className={`bg-white px-3 sm:px-4 py-1 sm:py-2 rounded-full font-bold text-xs sm:text-sm whitespace-nowrap flex-shrink-0 ${isMiamiProperty ? 'text-[#D946EF]' : 'text-[#0891B2]'}`}>
                 Artist House
               </div>
             )}
@@ -176,7 +182,7 @@ export default function PropertyDetailPage() {
             </div>
             <div>
               <p className="text-gray-600 text-xs sm:text-sm">Annual ROI</p>
-              <p className="text-xl sm:text-2xl font-bold text-[#0891B2]">{roi.toFixed(1)}%</p>
+              <p className={`text-xl sm:text-2xl font-bold ${isMiamiProperty ? 'text-[#D946EF]' : 'text-[#0891B2]'}`}>{roi.toFixed(1)}%</p>
             </div>
             <div>
               <p className="text-gray-600 text-xs sm:text-sm">Share Price</p>
@@ -205,7 +211,7 @@ export default function PropertyDetailPage() {
               onClick={() => setActiveTab(tab)}
               className={`py-3 sm:py-4 px-2 sm:px-0 border-b-2 font-medium transition whitespace-nowrap text-xs sm:text-base ${
                 activeTab === tab
-                  ? 'border-[#0891B2] text-[#0891B2]'
+                  ? isMiamiProperty ? 'border-[#D946EF] text-[#D946EF]' : 'border-[#0891B2] text-[#0891B2]'
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -245,7 +251,7 @@ export default function PropertyDetailPage() {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3 overflow-hidden">
                       <div
-                        className="bg-gradient-to-r from-[#0891B2] to-cyan-400 h-full transition-all"
+                        className={`bg-gradient-to-r h-full transition-all ${isMiamiProperty ? 'from-[#D946EF] to-pink-400' : 'from-[#0891B2] to-cyan-400'}`}
                         style={{ width: `${percentageSold}%` }}
                       />
                     </div>
@@ -299,7 +305,7 @@ export default function PropertyDetailPage() {
               {availableShares > 0 && (
                 <Link
                   href={`/property/${propertyId}?tab=overview`}
-                  className="w-full py-2.5 sm:py-3 px-3 sm:px-4 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#0891B2]/30 transition text-center block text-sm sm:text-base"
+                  className={`w-full py-2.5 sm:py-3 px-3 sm:px-4 bg-gradient-to-r text-white font-bold rounded-lg hover:shadow-lg transition text-center block text-sm sm:text-base ${isMiamiProperty ? 'from-[#D946EF] to-pink-400 hover:shadow-[#D946EF]/30' : 'from-[#0891B2] to-cyan-400 hover:shadow-[#0891B2]/30'}`}
                 >
                   <Share2 className="w-4 h-4 inline mr-2" />
                   Invest Now
@@ -360,7 +366,7 @@ export default function PropertyDetailPage() {
               <div className="bg-white border border-gray-200 rounded-xl p-8 sm:p-12 text-center">
                 <Vote className="w-8 sm:w-12 h-8 sm:h-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
                 <p className="text-gray-600 mb-3 sm:mb-4 text-sm sm:text-base">No proposals yet</p>
-                <button className="py-2 px-4 sm:py-2 sm:px-6 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg text-xs sm:text-sm">
+                <button className={`py-2 px-4 sm:py-2 sm:px-6 bg-gradient-to-r text-white font-bold rounded-lg hover:shadow-lg text-xs sm:text-sm ${isMiamiProperty ? 'from-[#D946EF] to-pink-400' : 'from-[#0891B2] to-cyan-400'}`}>
                   + Create
                 </button>
               </div>
@@ -471,7 +477,7 @@ export default function PropertyDetailPage() {
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-1.5">
                           <div
-                            className="bg-[#0891B2] h-1.5 rounded-full"
+                            className={isMiamiProperty ? 'bg-[#D946EF] h-1.5 rounded-full' : 'bg-[#0891B2] h-1.5 rounded-full'}
                             style={{ width: `${shareholder.percentage}%` }}
                           />
                         </div>
@@ -510,7 +516,7 @@ export default function PropertyDetailPage() {
                             <div className="flex items-center gap-2">
                               <div className="w-20 bg-gray-200 rounded-full h-2">
                                 <div
-                                  className="bg-[#0891B2] h-2 rounded-full"
+                                  className={isMiamiProperty ? 'bg-[#D946EF] h-2 rounded-full' : 'bg-[#0891B2] h-2 rounded-full'}
                                   style={{ width: `${shareholder.percentage}%` }}
                                 />
                               </div>
@@ -537,14 +543,14 @@ export default function PropertyDetailPage() {
           <div className="space-y-4 sm:space-y-6">
             <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-8">
               <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-8">
-                <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-[#0891B2] flex-shrink-0" />
+                <Calendar className={`w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 ${isMiamiProperty ? 'text-[#D946EF]' : 'text-[#0891B2]'}`} />
                 <h2 className="text-lg sm:text-2xl font-bold text-gray-900">Book This Property</h2>
               </div>
 
               {/* Booking Rates */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 mb-6 sm:mb-8">
                 {/* Hourly Rate */}
-                <div className="bg-gradient-to-br from-[#0891B2]/10 to-pink-100 border border-[#0891B2]/30 rounded-lg p-4 sm:p-6">
+                <div className={`bg-gradient-to-br border rounded-lg p-4 sm:p-6 ${isMiamiProperty ? 'from-[#D946EF]/10 to-pink-100 border-[#D946EF]/30' : 'from-[#0891B2]/10 to-cyan-100 border-[#0891B2]/30'}`}>
                   <p className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-2">Hourly</p>
                   <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-4">
                     ${property.hourlyRate?.toLocaleString() || 'N/A'}
@@ -552,14 +558,14 @@ export default function PropertyDetailPage() {
                   <p className="text-gray-700 text-xs sm:text-sm mb-3 sm:mb-4">By the hour</p>
                   <Link
                     href={`/book-studio/${propertyId}`}
-                    className="inline-block py-2 px-4 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg transition text-xs sm:text-sm"
+                    className={`inline-block py-2 px-4 bg-gradient-to-r text-white font-bold rounded-lg hover:shadow-lg transition text-xs sm:text-sm ${isMiamiProperty ? 'from-[#D946EF] to-pink-400' : 'from-[#0891B2] to-cyan-400'}`}
                   >
                     Book Now
                   </Link>
                 </div>
 
                 {/* Daily Rate */}
-                <div className="bg-gradient-to-br from-[#0891B2]/10 to-pink-100 border border-[#0891B2]/30 rounded-lg p-4 sm:p-6">
+                <div className={`bg-gradient-to-br border rounded-lg p-4 sm:p-6 ${isMiamiProperty ? 'from-[#D946EF]/10 to-pink-100 border-[#D946EF]/30' : 'from-[#0891B2]/10 to-cyan-100 border-[#0891B2]/30'}`}>
                   <p className="text-gray-600 text-xs sm:text-sm mb-1 sm:mb-2">Daily</p>
                   <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 sm:mb-4">
                     ${property.dailyRate?.toLocaleString() || 'N/A'}
@@ -567,7 +573,7 @@ export default function PropertyDetailPage() {
                   <p className="text-gray-700 text-xs sm:text-sm mb-3 sm:mb-4">Full day</p>
                   <Link
                     href={`/book-studio/${propertyId}`}
-                    className="inline-block py-2 px-4 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg transition text-xs sm:text-sm"
+                    className={`inline-block py-2 px-4 bg-gradient-to-r text-white font-bold rounded-lg hover:shadow-lg transition text-xs sm:text-sm ${isMiamiProperty ? 'from-[#D946EF] to-pink-400' : 'from-[#0891B2] to-cyan-400'}`}
                   >
                     Book Now
                   </Link>
@@ -579,19 +585,19 @@ export default function PropertyDetailPage() {
                 <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4">Info</h3>
                 <ul className="space-y-2 sm:space-y-3 text-gray-700 text-xs sm:text-sm">
                   <li className="flex items-start gap-2">
-                    <span className="text-[#0891B2] font-bold flex-shrink-0">•</span>
+                    <span className={isMiamiProperty ? 'text-[#D946EF] font-bold flex-shrink-0' : 'text-[#0891B2] font-bold flex-shrink-0'}>•</span>
                     <span>Click "Book Now" to reserve</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-[#0891B2] font-bold flex-shrink-0">•</span>
+                    <span className={isMiamiProperty ? 'text-[#D946EF] font-bold flex-shrink-0' : 'text-[#0891B2] font-bold flex-shrink-0'}>•</span>
                     <span>Choose hourly or daily</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-[#0891B2] font-bold flex-shrink-0">•</span>
+                    <span className={isMiamiProperty ? 'text-[#D946EF] font-bold flex-shrink-0' : 'text-[#0891B2] font-bold flex-shrink-0'}>•</span>
                     <span>Confirm dates and times</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-[#0891B2] font-bold flex-shrink-0">•</span>
+                    <span className={isMiamiProperty ? 'text-[#D946EF] font-bold flex-shrink-0' : 'text-[#0891B2] font-bold flex-shrink-0'}>•</span>
                     <span>Complete payment</span>
                   </li>
                 </ul>
