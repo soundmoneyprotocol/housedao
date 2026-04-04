@@ -182,6 +182,93 @@ export default function AboutPage() {
           </div>
         </section>
 
+        {/* HouseDAO vs REITs */}
+        <section className="mb-16">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-8">HouseDAO vs Traditional REITs</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Traditional REIT */}
+            <div className="bg-white border border-gray-200 rounded-xl p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Traditional REIT (e.g., Vanguard Real Estate ETF)</h3>
+              <ul className="space-y-4">
+                <li className="flex gap-3">
+                  <span className="text-red-500 font-bold text-xl flex-shrink-0">✕</span>
+                  <span className="text-gray-700"><strong>Locked-in investment periods</strong> - Often require long-term holding with early exit penalties</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-red-500 font-bold text-xl flex-shrink-0">✕</span>
+                  <span className="text-gray-700"><strong>Limited liquidity</strong> - Can take days or weeks to sell shares, especially during market downturns</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-red-500 font-bold text-xl flex-shrink-0">✕</span>
+                  <span className="text-gray-700"><strong>No voting rights</strong> - Shareholders have no say in property management decisions</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-red-500 font-bold text-xl flex-shrink-0">✕</span>
+                  <span className="text-gray-700"><strong>Opaque operations</strong> - Limited visibility into individual property performance</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-red-500 font-bold text-xl flex-shrink-0">✕</span>
+                  <span className="text-gray-700"><strong>High minimum investments</strong> - Typically require $5,000+ to invest</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-red-500 font-bold text-xl flex-shrink-0">✕</span>
+                  <span className="text-gray-700"><strong>Centralized management</strong> - REIT company makes all decisions</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* HouseDAO */}
+            <div className="bg-white border border-[#0891B2]/30 rounded-xl p-8 ring-2 ring-[#0891B2]/20">
+              <h3 className="text-2xl font-bold text-[#0891B2] mb-6">HouseDAO - Blockchain Fractional Ownership</h3>
+              <ul className="space-y-4">
+                <li className="flex gap-3">
+                  <span className="text-[#0891B2] font-bold text-xl flex-shrink-0">✓</span>
+                  <span className="text-gray-700"><strong>Instant liquidity</strong> - Trade your shares on the marketplace anytime, in minutes</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-[#0891B2] font-bold text-xl flex-shrink-0">✓</span>
+                  <span className="text-gray-700"><strong>Seamless exit options</strong> - Sell shares immediately without lock-in periods or penalties</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-[#0891B2] font-bold text-xl flex-shrink-0">✓</span>
+                  <span className="text-gray-700"><strong>Full governance rights</strong> - Vote on all property decisions and submit proposals</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-[#0891B2] font-bold text-xl flex-shrink-0">✓</span>
+                  <span className="text-gray-700"><strong>Complete transparency</strong> - All property data and financial metrics visible on-chain</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-[#0891B2] font-bold text-xl flex-shrink-0">✓</span>
+                  <span className="text-gray-700"><strong>Low entry barrier</strong> - Start investing with any amount, buy individual shares</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-[#0891B2] font-bold text-xl flex-shrink-0">✓</span>
+                  <span className="text-gray-700"><strong>Decentralized governance</strong> - Members collectively decide property strategy</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Liquidity Highlight */}
+          <div className="mt-8 bg-gradient-to-br from-[#0891B2]/10 to-cyan-100 border-2 border-[#0891B2] rounded-xl p-6 sm:p-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">Why Blockchain Liquidity Matters</h3>
+            <div className="space-y-4">
+              <p className="text-gray-700">
+                Traditional REITs can lock investors in for months or years. If you need to access your capital in an emergency,
+                you're often forced to sell at market rates or face penalties. <strong>With HouseDAO, your shares are always tradable.</strong>
+              </p>
+              <p className="text-gray-700">
+                Your fractional shares exist as tokens on the blockchain. Want to exit? Simply list your shares on the marketplace.
+                Another investor can buy them instantly—no approval required, no waiting period, no penalties.
+              </p>
+              <p className="text-[#0891B2] font-bold text-lg">
+                You own your investment. You decide when to buy or sell. No intermediary can tell you to wait.
+              </p>
+            </div>
+          </div>
+        </section>
+
+
         {/* Investment Benefits */}
         <section className="mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-6">Why Invest Through HouseDAO?</h2>
