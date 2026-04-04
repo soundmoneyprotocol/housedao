@@ -41,6 +41,26 @@ export default function InvestPage() {
   const [filterArtistHouses, setFilterArtistHouses] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<PropertyWithMetrics | null>(null);
   const [showInvestModal, setShowInvestModal] = useState(false);
+  const [walletProvider, setWalletProvider] = useState<any>(null);
+  const [walletError, setWalletError] = useState<string | null>(null);
+
+  // Initialize Web3 provider safely
+  useEffect(() => {
+    const initializeWalletProvider = () => {
+      try {
+        if (typeof window !== 'undefined' && (window as any).ethereum) {
+          setWalletProvider((window as any).ethereum);
+          setWalletError(null);
+        }
+      } catch (error) {
+        console.warn('Wallet provider initialization warning:', error);
+        setWalletError('Wallet extension conflict detected. App will work without Web3.');
+        setWalletProvider(null);
+      }
+    };
+
+    initializeWalletProvider();
+  }, []);
 
   useEffect(() => {
     fetchProperties();
@@ -121,6 +141,13 @@ export default function InvestPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-900 to-neutral-950">
+      {/* Wallet Error Banner */}
+      {walletError && (
+        <div className="bg-yellow-900/30 border border-yellow-700 text-yellow-200 px-4 py-3">
+          <p className="text-sm">{walletError}</p>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-gradient-to-r from-[#D946EF] to-pink-500 p-8 text-white">
         <div className="max-w-7xl mx-auto">
@@ -236,6 +263,7 @@ export default function InvestPage() {
       {showInvestModal && selectedProperty && selectedProperty.valuationUsd > 0 && (
         <InvestmentModal
           property={selectedProperty}
+          walletProvider={walletProvider}
           onClose={() => setShowInvestModal(false)}
           onSuccess={() => {
             setShowInvestModal(false);
@@ -397,11 +425,12 @@ function PropertyCard({ property, onInvest }: PropertyCardProps) {
 
 interface InvestmentModalProps {
   property: PropertyWithMetrics;
+  walletProvider: any;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-function InvestmentModal({ property, onClose, onSuccess }: InvestmentModalProps) {
+function InvestmentModal({ property, walletProvider, onClose, onSuccess }: InvestmentModalProps) {
   const [shares, setShares] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -416,6 +445,18 @@ function InvestmentModal({ property, onClose, onSuccess }: InvestmentModalProps)
 
     setIsLoading(true);
     try {
+      // Safely attempt to use wallet provider if available
+      let accountAddress = null;
+      if (walletProvider) {
+        try {
+          const accounts = await walletProvider.request({ method: 'eth_requestAccounts' });
+          accountAddress = accounts[0];
+        } catch (walletError) {
+          console.warn('Wallet connection failed:', walletError);
+          toast.warning('Wallet not available. Proceeding with fiat payment.');
+        }
+      }
+
       const response = await fetch('/api/homedao/invest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -423,6 +464,7 @@ function InvestmentModal({ property, onClose, onSuccess }: InvestmentModalProps)
           propertyId: property.blockchainId,
           sharesDesired: shares,
           totalUSD: totalCost * 100,
+          walletAddress: accountAddress,
         }),
       });
 
