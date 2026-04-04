@@ -30,8 +30,8 @@ export default function AboutPage() {
               HouseDAO enables fractional ownership of premium properties through blockchain-based shares.
             </p>
             <p className="text-gray-700 text-lg leading-relaxed">
-              Members purchase fractional shares in curated real estate properties—from art studios in Miami
-              to luxury penthouses on Billionaires Row NYC and London. Every shareholder becomes a stakeholder
+              Members purchase fractional shares in curated real estate properties—from recording studios in Miami
+              to Private Dinner and Listening Parties on Billionaires Row NYC and London. Every shareholder becomes a stakeholder
               with voting rights on property management, improvements, and dividend distributions.
             </p>
           </div>
