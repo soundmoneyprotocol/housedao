@@ -534,12 +534,12 @@ function InvestmentModal({ property, walletProvider, onClose, onSuccess }: Inves
                 Continue with Stripe Payment
               </button>
               <a
-                href="https://chromewebstore.google.com/detail/claude/YOUR_EXTENSION_ID"
+                href="https://www.privy.io"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full px-3 py-2 bg-gray-600 text-white rounded text-sm font-bold text-center hover:bg-gray-700"
               >
-                Install Claude Wallet
+                Connect with Privy
               </a>
             </div>
           </div>
