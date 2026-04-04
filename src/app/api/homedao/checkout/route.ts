@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 
-// In-memory storage for simulated checkout sessions
+// In-memory storage for simulated checkout sessions (fallback for development)
 const simulatedSessions: Map<string, any> = new Map();
 
 interface CheckoutRequest {
@@ -13,34 +13,80 @@ interface CheckoutRequest {
     time: string;
     duration: string;
   };
+  vvsMembership?: boolean;
+  propertyId?: string;
 }
 
+/**
+ * POST /api/homedao/checkout
+ * Creates Stripe checkout sessions by proxying to soundmoneymusic-main API
+ * Falls back to simulated checkout in development mode
+ */
 export async function POST(request: Request) {
   try {
     const body: CheckoutRequest = await request.json();
 
-    // Generate a simulated Stripe session ID
-    const sessionId = `cs_test_${Math.random().toString(36).substr(2, 24)}`;
-    
-    // Store the session details
-    simulatedSessions.set(sessionId, {
-      bookingId: body.bookingId,
-      propertyName: body.propertyName,
-      amount: body.amount,
-      email: body.email,
-      bookingDetails: body.bookingDetails,
-      createdAt: new Date().toISOString(),
-      status: 'open',
-    });
+    // Validate required fields
+    if (!body.bookingId || !body.amount || !body.email) {
+      return Response.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
 
-    // Check if Stripe is configured with real keys (not test keys)
-    const hasRealStripeKeys = process.env.STRIPE_SECRET_KEY && 
-                              !process.env.STRIPE_SECRET_KEY.includes('test_') &&
-                              !process.env.STRIPE_SECRET_KEY.includes('sk_test');
+    // Try to use the real API service first
+    const apiBaseUrl = process.env.SOUNDMONEY_API_URL || 'https://soundmoney.io';
+    const isProduction = process.env.NODE_ENV === 'production';
 
-    if (hasRealStripeKeys) {
+    if (isProduction && apiBaseUrl !== 'https://soundmoney.io') {
       try {
-        // Use real Stripe if properly configured
+        const response = await fetch(`${apiBaseUrl}/api/stripe/checkout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(process.env.SOUNDMONEY_API_KEY && {
+              Authorization: `Bearer ${process.env.SOUNDMONEY_API_KEY}`,
+            }),
+          },
+          body: JSON.stringify({
+            bookingId: body.bookingId,
+            propertyName: body.propertyName,
+            amount: body.amount,
+            email: body.email,
+            bookingDetails: body.bookingDetails,
+            vvsMembership: body.vvsMembership || false,
+            propertyId: body.propertyId,
+          }),
+        });
+
+        if (response.ok) {
+          const checkoutData = await response.json();
+          console.log('Stripe session created via API:', {
+            sessionId: checkoutData.sessionId,
+            bookingId: body.bookingId,
+          });
+
+          return Response.json({
+            url: checkoutData.url,
+            sessionId: checkoutData.sessionId,
+            isSimulated: false,
+          });
+        }
+
+        // If API fails, fall through to local Stripe or simulation
+        console.warn('API checkout failed, falling back to local Stripe');
+      } catch (apiError) {
+        console.error('API call failed:', apiError);
+        // Fall through to local handling
+      }
+    }
+
+    // Try local Stripe if configured
+    const hasLocalStripeKeys = process.env.STRIPE_SECRET_KEY &&
+                               !process.env.STRIPE_SECRET_KEY.includes('test_');
+
+    if (hasLocalStripeKeys) {
+      try {
         const Stripe = require('stripe');
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -58,6 +104,21 @@ export async function POST(request: Request) {
               },
               quantity: 1,
             },
+            ...(body.vvsMembership
+              ? [
+                  {
+                    price_data: {
+                      currency: 'usd',
+                      product_data: {
+                        name: 'VVS Concierge Service',
+                        description: 'Premium concierge and exclusive perks',
+                      },
+                      unit_amount: 450000, // $4,500
+                    },
+                    quantity: 1,
+                  },
+                ]
+              : []),
           ],
           mode: 'payment',
           success_url: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/booking-success?session_id={CHECKOUT_SESSION_ID}`,
@@ -66,21 +127,50 @@ export async function POST(request: Request) {
           metadata: {
             bookingId: body.bookingId,
             propertyName: body.propertyName,
+            propertyId: body.propertyId || '',
+            vvsMembership: body.vvsMembership ? 'true' : 'false',
           },
         });
 
-        return Response.json({ url: session.url });
+        console.log('Local Stripe session created:', {
+          sessionId: session.id,
+          bookingId: body.bookingId,
+        });
+
+        return Response.json({
+          url: session.url,
+          sessionId: session.id,
+          isSimulated: false,
+        });
       } catch (stripeError) {
-        console.error('Real Stripe error:', stripeError);
-        // Fall through to simulated checkout
+        console.error('Local Stripe error:', stripeError);
+        // Fall through to simulation
       }
     }
 
-    // Simulate Stripe checkout - return a simulated checkout page
+    // Fall back to simulated checkout for development/testing
+    const sessionId = `cs_test_${Math.random().toString(36).substr(2, 24)}`;
+
+    simulatedSessions.set(sessionId, {
+      bookingId: body.bookingId,
+      propertyName: body.propertyName,
+      amount: body.amount,
+      email: body.email,
+      bookingDetails: body.bookingDetails,
+      vvsMembership: body.vvsMembership || false,
+      createdAt: new Date().toISOString(),
+      status: 'open',
+    });
+
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
     const checkoutUrl = `${baseUrl}/api/homedao/checkout-simulate?session_id=${sessionId}`;
 
-    return Response.json({ 
+    console.log('Using simulated checkout:', {
+      sessionId,
+      bookingId: body.bookingId,
+    });
+
+    return Response.json({
       url: checkoutUrl,
       isSimulated: true,
       sessionId: sessionId,
@@ -89,13 +179,16 @@ export async function POST(request: Request) {
     console.error('Checkout error:', error.message);
 
     return Response.json({
-      success: false,
       error: 'Checkout failed',
+      details: error.message,
     }, { status: 500 });
   }
 }
 
-// Endpoint to retrieve simulated session
+/**
+ * GET /api/homedao/checkout
+ * Retrieves checkout session details
+ */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const sessionId = searchParams.get('session_id');
@@ -104,6 +197,59 @@ export async function GET(request: Request) {
     return Response.json({ error: 'Session ID required' }, { status: 400 });
   }
 
+  // Check if it's a real Stripe session (starts with cs_)
+  if (sessionId.startsWith('cs_')) {
+    try {
+      const apiBaseUrl = process.env.SOUNDMONEY_API_URL || 'https://soundmoney.io';
+      const response = await fetch(
+        `${apiBaseUrl}/api/stripe/checkout?session_id=${encodeURIComponent(sessionId)}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(process.env.SOUNDMONEY_API_KEY && {
+              Authorization: `Bearer ${process.env.SOUNDMONEY_API_KEY}`,
+            }),
+          },
+        }
+      );
+
+      if (response.ok) {
+        const sessionData = await response.json();
+        return Response.json(sessionData);
+      }
+
+      // Fall back to local Stripe
+      try {
+        const Stripe = require('stripe');
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+        return Response.json({
+          sessionId: session.id,
+          status: session.status,
+          email: session.customer_email,
+          amount: session.amount_total ? session.amount_total / 100 : 0,
+          metadata: session.metadata,
+          paymentStatus: session.payment_status,
+        });
+      } catch (stripeError) {
+        console.error('Stripe retrieval error:', stripeError);
+        return Response.json(
+          { error: 'Session not found' },
+          { status: 404 }
+        );
+      }
+    } catch (apiError) {
+      console.error('API retrieval error:', apiError);
+      return Response.json(
+        { error: 'Failed to retrieve session' },
+        { status: 500 }
+      );
+    }
+  }
+
+  // Check simulated sessions
   const session = simulatedSessions.get(sessionId);
   if (!session) {
     return Response.json({ error: 'Session not found' }, { status: 404 });
