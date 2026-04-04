@@ -577,7 +577,7 @@ export default function BookPropertyPage() {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={isSubmitting || !selectedDate || !formData.name || !formData.email || !formData.phone}
+                disabled={isSubmitting}
                 className="w-full py-3 sm:py-4 px-4 sm:px-6 bg-gradient-to-r from-[#0891B2] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#0891B2]/30 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base"
               >
                 {isSubmitting ? 'Processing...' : 'Proceed to Payment'}
