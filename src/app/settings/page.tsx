@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState } from 'react';
 import { User, Mail, Lock, Bell, Eye, EyeOff } from 'lucide-react';
 import Header from '../../components/Header';
