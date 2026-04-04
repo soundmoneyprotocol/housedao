@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, ArrowLeft, Share2, Check, AlertCircle, MapPin, Search } from 'lucide-react';
+import { Calendar, Clock, ArrowLeft, Share2, Check, AlertCircle, MapPin, Search, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { useParams } from 'next/navigation';
@@ -36,6 +36,8 @@ export default function BookPropertyPage() {
     email: '',
     phone: '',
   });
+  const [messageToOwner, setMessageToOwner] = useState('');
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [addressSearch, setAddressSearch] = useState('');
   const [mapCoordinates, setMapCoordinates] = useState<{ lat: string; lng: string } | null>(null);
@@ -106,6 +108,48 @@ export default function BookPropertyPage() {
       toast.error('Error searching address');
     } finally {
       setSearchLoading(false);
+    }
+  };
+
+  const handleSendMessageToOwner = async () => {
+    if (!messageToOwner.trim()) {
+      toast.error('Please enter a message');
+      return;
+    }
+
+    if (!formData.email) {
+      toast.error('Please enter your email first');
+      return;
+    }
+
+    setIsSendingMessage(true);
+    try {
+      const response = await fetch('/api/homedao/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          propertyId: property?.id,
+          propertyName: property?.name,
+          senderName: formData.name,
+          senderEmail: formData.email,
+          senderPhone: formData.phone,
+          message: messageToOwner,
+          bookingType,
+          bookingDate: selectedDate,
+        }),
+      });
+
+      if (response.ok) {
+        toast.success('Message sent to venue owner!');
+        setMessageToOwner('');
+      } else {
+        toast.error('Failed to send message');
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast.error('Error sending message');
+    } finally {
+      setIsSendingMessage(false);
     }
   };
 
@@ -490,6 +534,34 @@ export default function BookPropertyPage() {
                       required
                     />
                   </div>
+                </div>
+              </div>
+
+              {/* Message to Venue Owner */}
+              <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-8">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-[#D946EF]" />
+                  Send Message to Venue Owner
+                </h2>
+
+                <div className="space-y-4">
+                  <textarea
+                    value={messageToOwner}
+                    onChange={(e) => setMessageToOwner(e.target.value)}
+                    placeholder="Let the venue owner know about any special requests or questions..."
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D946EF] focus:border-transparent text-sm sm:text-base resize-none"
+                    rows={4}
+                  />
+                  <p className="text-xs text-gray-500">Optional - Share special requests or questions with the venue owner</p>
+                  <button
+                    type="button"
+                    onClick={handleSendMessageToOwner}
+                    disabled={isSendingMessage || !messageToOwner.trim()}
+                    className="w-full py-2 sm:py-3 px-4 sm:px-6 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-bold rounded-lg transition flex items-center justify-center gap-2 text-sm sm:text-base"
+                  >
+                    <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                    {isSendingMessage ? 'Sending...' : 'Send Message'}
+                  </button>
                 </div>
               </div>
 

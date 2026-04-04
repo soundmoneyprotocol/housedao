@@ -453,7 +453,7 @@ function InvestmentModal({ property, walletProvider, onClose, onSuccess }: Inves
           accountAddress = accounts[0];
         } catch (walletError) {
           console.warn('Wallet connection failed:', walletError);
-          toast.warning('Wallet not available. Proceeding with fiat payment.');
+          toast.error('Wallet not available. Proceeding with fiat payment.');
         }
       }
 
