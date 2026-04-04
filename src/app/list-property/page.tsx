@@ -74,7 +74,7 @@ export default function ListPropertyPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-900 to-neutral-950">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#D946EF] to-pink-500 p-8 text-white">
+      <div className="bg-gradient-to-r from-[#0891B2] to-cyan-400 p-8 text-white">
         <div className="max-w-4xl mx-auto">
           <Link href="/invest" className="flex items-center gap-2 mb-4 w-fit hover:opacity-80">
             <ArrowLeft className="w-5 h-5" />
@@ -103,7 +103,7 @@ export default function ListPropertyPage() {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="e.g., Brooklyn Loft"
-                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D946EF]"
+                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
                   disabled={isSubmitting}
                 />
               </div>
@@ -118,7 +118,7 @@ export default function ListPropertyPage() {
                   value={formData.city}
                   onChange={handleChange}
                   placeholder="e.g., New York"
-                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D946EF]"
+                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
                   disabled={isSubmitting}
                 />
               </div>
@@ -136,7 +136,7 @@ export default function ListPropertyPage() {
                   value={formData.latitude}
                   onChange={handleChange}
                   placeholder="40.6501"
-                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D946EF]"
+                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
                   disabled={isSubmitting}
                 />
               </div>
@@ -151,7 +151,7 @@ export default function ListPropertyPage() {
                   value={formData.longitude}
                   onChange={handleChange}
                   placeholder="-73.9496"
-                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D946EF]"
+                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
                   disabled={isSubmitting}
                 />
               </div>
@@ -168,7 +168,7 @@ export default function ListPropertyPage() {
                 onChange={handleChange}
                 placeholder="Describe your property..."
                 rows={4}
-                className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D946EF]"
+                className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
                 disabled={isSubmitting}
               />
             </div>
@@ -185,7 +185,7 @@ export default function ListPropertyPage() {
                   value={formData.valuationUsd}
                   onChange={handleChange}
                   placeholder="5000000"
-                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D946EF]"
+                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
                   disabled={isSubmitting}
                 />
               </div>
@@ -200,7 +200,7 @@ export default function ListPropertyPage() {
                   value={formData.annualYieldPercentage}
                   onChange={handleChange}
                   placeholder="5"
-                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D946EF]"
+                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
                   disabled={isSubmitting}
                 />
               </div>
@@ -215,7 +215,7 @@ export default function ListPropertyPage() {
                   value={formData.maxShareSupply}
                   onChange={handleChange}
                   placeholder="1000"
-                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D946EF]"
+                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
                   disabled={isSubmitting}
                 />
               </div>
@@ -233,7 +233,7 @@ export default function ListPropertyPage() {
                   value={formData.imageUrl}
                   onChange={handleChange}
                   placeholder="https://..."
-                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D946EF]"
+                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
                   disabled={isSubmitting}
                 />
               </div>
@@ -245,7 +245,7 @@ export default function ListPropertyPage() {
                     name="isArtistHouse"
                     checked={formData.isArtistHouse}
                     onChange={handleChange}
-                    className="w-5 h-5 rounded bg-neutral-700 border-neutral-600 text-[#D946EF]"
+                    className="w-5 h-5 rounded bg-neutral-700 border-neutral-600 text-[#0891B2]"
                     disabled={isSubmitting}
                   />
                   <span className="text-sm font-medium text-neutral-300">Artist House Venue</span>
@@ -258,7 +258,7 @@ export default function ListPropertyPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 py-3 px-6 bg-gradient-to-r from-[#D946EF] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#D946EF]/50 disabled:opacity-50 transition flex items-center justify-center gap-2"
+                className="flex-1 py-3 px-6 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#0891B2]/30 disabled:opacity-50 transition flex items-center justify-center gap-2"
               >
                 <Upload className="w-5 h-5" />
                 {isSubmitting ? 'Listing...' : 'List Property'}
