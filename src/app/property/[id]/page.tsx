@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { MapPin, Users, TrendingUp, Vote, Share2, History, AlertCircle, Calendar } from 'lucide-react';
+import { MapPin, Users, TrendingUp, Vote, Share2, History, AlertCircle, Calendar, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -137,6 +137,14 @@ export default function PropertyDetailPage() {
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-r from-[#D946EF]/80 to-pink-400/80" />
+
+        {/* Back Button */}
+        <div className="absolute top-4 sm:top-8 left-4 sm:left-8">
+          <Link href="/invest" className="inline-flex items-center gap-2 text-white/80 hover:text-white transition">
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-xs sm:text-sm font-bold">Back</span>
+          </Link>
+        </div>
 
         <div className="absolute bottom-4 sm:bottom-8 left-4 sm:left-8 right-4 sm:right-8">
           <div className="flex items-start justify-between gap-3">
