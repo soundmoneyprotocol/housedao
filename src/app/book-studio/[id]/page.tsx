@@ -159,7 +159,7 @@ export default function BookPropertyPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 flex items-center justify-center">
-        <p className="text-gray-800 text-lg">Loading...</p>
+        <p className="text-gray-800 text-sm sm:text-base md:text-lg">Loading...</p>
       </div>
     );
   }
@@ -295,7 +295,7 @@ export default function BookPropertyPage() {
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             Back to Property
           </Link>
-          <h1 className="text-2xl sm:text-4xl font-bold">{property.name}</h1>
+          <h1 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-bold">{property.name}</h1>
           <p className="text-white/90 text-sm sm:text-base">{property.city}</p>
         </div>
       </div>
@@ -307,8 +307,8 @@ export default function BookPropertyPage() {
           <div className="lg:col-span-2">
             <form onSubmit={handleBookingSubmit} className="space-y-6 sm:space-y-8">
               {/* Booking Type & Date */}
-              <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-8">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
+              <div className="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 md:p-6 lg:p-8">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 md:mb-6 flex items-center gap-2">
                   <Calendar className="w-5 h-5 sm:w-6 sm:h-6 text-[#0891B2]" />
                   Select Date & Time
                 </h2>
@@ -436,8 +436,8 @@ export default function BookPropertyPage() {
               </div>
 
               {/* Location Map */}
-              <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-8">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
+              <div className="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 md:p-6 lg:p-8">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 md:mb-6 flex items-center gap-2">
                   <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-[#0891B2]" />
                   Location
                 </h2>
@@ -501,8 +501,8 @@ export default function BookPropertyPage() {
               </div>
 
               {/* Contact Information */}
-              <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-8">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Contact Info</h2>
+              <div className="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 md:p-6 lg:p-8">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 md:mb-6">Contact Info</h2>
 
                 <div className="space-y-3 sm:space-y-4">
                   <div>
@@ -547,8 +547,8 @@ export default function BookPropertyPage() {
               </div>
 
               {/* Message to Venue Owner */}
-              <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-8">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
+              <div className="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 md:p-6 lg:p-8">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 md:mb-6 flex items-center gap-2">
                   <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-[#0891B2]" />
                   Send Message to Venue Owner
                 </h2>
@@ -589,7 +589,7 @@ export default function BookPropertyPage() {
           {/* Booking Summary - Sticky on desktop, below form on mobile */}
           <div className="lg:col-span-1">
             <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 lg:sticky lg:top-8">
-              <h3 className="text-lg sm:text-lg font-bold text-gray-900 mb-4 sm:mb-6">Summary</h3>
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 md:mb-6">Summary</h3>
 
               <div className="space-y-3 sm:space-y-4 pb-4 sm:pb-6 border-b border-gray-200 text-sm sm:text-base">
                 <div>
@@ -656,7 +656,7 @@ export default function BookPropertyPage() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-base sm:text-lg font-bold text-gray-900">Total</span>
-                  <span className="text-2xl sm:text-2xl font-bold text-[#0891B2]">${calculateBookingTotal()}</span>
+                  <span className="text-xl sm:text-2xl font-bold text-[#0891B2]">${calculateBookingTotal()}</span>
                 </div>
                 <p className="text-xs text-gray-600">Secure payment via Stripe</p>
               </div>

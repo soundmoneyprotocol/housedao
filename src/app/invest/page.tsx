@@ -169,7 +169,7 @@ export default function InvestPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-neutral-900 to-neutral-950">
-        <div className="text-white text-lg">Loading properties...</div>
+        <div className="text-white text-sm sm:text-base md:text-lg">Loading properties...</div>
       </div>
     );
   }
@@ -186,8 +186,8 @@ export default function InvestPage() {
       {/* Header */}
       <div className="bg-gradient-to-r from-[#0891B2] to-pink-500 p-8 text-white">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold mb-4">HouseDAO: Invest in Real Estate</h1>
-          <p className="text-lg opacity-90 mb-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">HouseDAO: Invest in Real Estate</h1>
+          <p className="text-sm sm:text-base md:text-lg opacity-90 mb-3 sm:mb-4">
             Own fractional shares in premium properties and participate in DAO governance
           </p>
           <div className="flex gap-3">
@@ -276,7 +276,7 @@ export default function InvestPage() {
       <div className="max-w-7xl mx-auto p-8">
         {filteredProperties.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-neutral-400 text-lg">No properties found matching your criteria</p>
+            <p className="text-neutral-400 text-sm sm:text-base md:text-lg">No properties found matching your criteria</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -339,7 +339,7 @@ function PropertyCard({ property, onInvest }: PropertyCardProps) {
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
-            <h3 className="text-lg font-bold text-white">{property.name}</h3>
+            <h3 className="text-base sm:text-lg font-bold text-white">{property.name}</h3>
             <p className="flex items-center gap-2 text-neutral-400 text-sm mt-1">
               <MapPin className="w-4 h-4" />
               {property.city}
@@ -528,7 +528,7 @@ function InvestmentModal({ property, walletProvider, onClose, onSuccess }: Inves
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-neutral-800 border border-neutral-700 rounded-xl max-w-md w-full p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">Invest in {property.name}</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-white">Invest in {property.name}</h2>
           <button
             onClick={onClose}
             className="text-neutral-400 hover:text-white text-2xl"
