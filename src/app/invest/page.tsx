@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { MapPin, TrendingUp, Vote, Share2, Calendar, Clock, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
-import Header from '../../components/Header';
+import Header from "../../components/Header";
+import { isMobileDevice } from "@/lib/deviceDetect";
 
 interface Property {
   id: string;
@@ -519,10 +520,11 @@ function InvestmentModal({ property, walletProvider, onClose, onSuccess }: Inves
       } else {
         // No wallet detected
         setIsLoading(false);
+        const isMobile = isMobileDevice();
         toast((t) => (
           <div className="space-y-2 max-w-sm">
             <p className="font-bold">No crypto wallet detected</p>
-            <p className="text-sm">You can still invest using Stripe. Or install a Web3 wallet:</p>
+            <p className="text-sm">You can still invest using Stripe. Or connect a Web3 wallet:</p>
             <div className="flex flex-col gap-2 mt-2">
               <button
                 onClick={() => {
@@ -534,17 +536,16 @@ function InvestmentModal({ property, walletProvider, onClose, onSuccess }: Inves
                 Continue with Stripe Payment
               </button>
               <a
-                href="https://www.privy.io"
+                href={isMobile ? "https://www.privy.io/download" : "https://www.privy.io"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full px-3 py-2 bg-gray-600 text-white rounded text-sm font-bold text-center hover:bg-gray-700"
+                className="w-full px-3 py-2 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white rounded text-sm font-bold text-center hover:shadow-lg"
               >
-                Connect with Privy
+                {isMobile ? '📱 Open Privy Wallet' : '🔐 Connect with Privy'}
               </a>
             </div>
           </div>
         ), { duration: 6000 });
-        return;
       }
 
       const response = await fetch('/api/homedao/invest', {
