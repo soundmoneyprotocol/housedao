@@ -190,15 +190,27 @@ export default function InvestPage() {
           <p className="text-sm sm:text-base md:text-lg opacity-90 mb-3 sm:mb-4">
             Own fractional shares in premium properties and participate in DAO governance
           </p>
-          <div className="flex gap-3">
-            <button className="px-4 py-2 bg-white/20 rounded-lg font-medium hover:bg-white/30 transition">
+          <div className="flex gap-3 flex-wrap">
+            <button className="px-4 py-2 bg-white/20 rounded-lg font-medium hover:bg-white/30 transition text-sm">
               All Properties
             </button>
             <Link
               href="/recently-listed"
-              className="px-4 py-2 bg-white/20 rounded-lg font-medium hover:bg-white/30 transition"
+              className="px-4 py-2 bg-white/20 rounded-lg font-medium hover:bg-white/30 transition text-sm"
             >
               Recently Listed
+            </Link>
+            <Link
+              href="/membership"
+              className="px-4 py-2 bg-white/20 rounded-lg font-medium hover:bg-white/30 transition text-sm"
+            >
+              Membership Tiers
+            </Link>
+            <Link
+              href="/about"
+              className="px-4 py-2 bg-white/20 rounded-lg font-medium hover:bg-white/30 transition text-sm"
+            >
+              About HouseDAO
             </Link>
           </div>
         </div>

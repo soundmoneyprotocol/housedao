@@ -61,7 +61,7 @@ export default function PropertyDetailPage() {
   const [dividends, setDividends] = useState<DividendRecord[]>([]);
   const [shareholders, setShareholders] = useState<Shareholder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'dao' | 'dividends' | 'cap-table' | 'booking'>(
+  const [activeTab, setActiveTab] = useState<'overview' | 'dao' | 'dividends' | 'cap-table' | 'booking' | 'concierge'>(
     'overview'
   );
 
@@ -205,7 +205,7 @@ export default function PropertyDetailPage() {
       {/* Tab Navigation */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-8 flex gap-2 sm:gap-8 overflow-x-auto">
-          {(['overview', 'dao', 'dividends', 'cap-table', 'booking'] as const).map((tab) => (
+          {(['overview', 'dao', 'dividends', 'cap-table', 'booking', 'concierge'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -220,6 +220,7 @@ export default function PropertyDetailPage() {
               {tab === 'dividends' && 'Dividends'}
               {tab === 'cap-table' && 'Cap Table'}
               {tab === 'booking' && 'Booking'}
+              {tab === 'concierge' && 'Concierge'}
             </button>
           ))}
         </div>
@@ -602,6 +603,146 @@ export default function PropertyDetailPage() {
                   </li>
                 </ul>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Concierge Tab */}
+        {activeTab === 'concierge' && (
+          <div className="space-y-6 sm:space-y-8">
+            {/* VVS Concierge Header */}
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6 sm:p-8">
+              <div className="flex items-start gap-4">
+                <div className="text-4xl">✨</div>
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                    VVS Concierge Flawless Experience Service
+                  </h2>
+                  <p className="text-gray-700 text-lg mb-4">
+                    Cut above the rest. Color the room creatively. Carats is the heavy weight in the room.
+                  </p>
+                  <p className="text-gray-600 italic">
+                    Membership: $4,500 per experience | Access to exclusive curated services and events
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Service Overview */}
+            <div className="bg-white border border-gray-200 rounded-xl p-6 sm:p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">What's Included</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[
+                  { title: 'Dedicated Concierge', desc: 'Personal concierge service for all property needs' },
+                  { title: 'VIP Access', desc: 'Priority booking and exclusive member-only events' },
+                  { title: 'Premium Events', desc: 'Curated art galleries, tech conferences, and networking dinners' },
+                  { title: 'Private Lounges', desc: 'Access to exclusive member lounges and facilities' },
+                  { title: 'Experience Curation', desc: 'Personalized recommendations and custom experiences' },
+                  { title: 'Member Community', desc: 'Network with elite investors, artists, and entrepreneurs' },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex gap-4">
+                    <div className="text-2xl text-purple-600 flex-shrink-0">◆</div>
+                    <div>
+                      <h4 className="font-bold text-gray-900 mb-1">{item.title}</h4>
+                      <p className="text-sm text-gray-600">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Membership Tiers */}
+            <div className="bg-white border border-gray-200 rounded-xl p-6 sm:p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Membership Tiers</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* VS Tier */}
+                <div className="border border-gray-300 rounded-lg p-6">
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">VS Tier</h4>
+                  <p className="text-2xl font-bold text-gray-700 mb-4">Base Access</p>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li>✓ General event entry</li>
+                    <li>✓ Digital guest pass</li>
+                    <li>✓ Basic networking</li>
+                    <li>✓ Public event calendar</li>
+                  </ul>
+                </div>
+
+                {/* VVS Tier */}
+                <div className="border-2 border-[#0891B2] rounded-lg p-6 bg-blue-50/50">
+                  <h4 className="text-lg font-bold text-[#0891B2] mb-2">VVS Tier</h4>
+                  <p className="text-2xl font-bold text-[#0891B2] mb-4">Premium Network</p>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li>✓ All VS benefits</li>
+                    <li>✓ VIP lounge access</li>
+                    <li>✓ Early event registration</li>
+                    <li>✓ Curated networking</li>
+                    <li>✓ Member directory</li>
+                  </ul>
+                </div>
+
+                {/* Flawless Tier */}
+                <div className="border-2 border-purple-600 rounded-lg p-6 bg-purple-50/50">
+                  <h4 className="text-lg font-bold text-purple-900 mb-2">Flawless Tier</h4>
+                  <p className="text-2xl font-bold text-purple-600 mb-4">Elite Circle</p>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li>✓ All VVS benefits</li>
+                    <li>✓ Private events</li>
+                    <li>✓ Direct access to curators</li>
+                    <li>✓ Bespoke experiences</li>
+                    <li>✓ 1-on-1 introductions</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Curated Experiences */}
+            <div className="bg-white border border-gray-200 rounded-xl p-6 sm:p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Upcoming Experiences</h3>
+              <div className="space-y-4">
+                {[
+                  { 
+                    title: 'Art Curation Masterclass',
+                    desc: 'Explore high-value art pieces and investment opportunities',
+                    date: 'April 15, 2026'
+                  },
+                  {
+                    title: 'Tech Accelerator Summit',
+                    desc: 'Network with founders, investors, and tech innovators',
+                    date: 'April 22, 2026'
+                  },
+                  {
+                    title: 'Exclusive Dining Experience',
+                    desc: 'Chef-curated meals with themed menus every two weeks',
+                    date: 'Bi-weekly'
+                  },
+                  {
+                    title: 'Investor Dinner Series',
+                    desc: 'Private dinners with portfolio companies and industry leaders',
+                    date: 'Monthly'
+                  },
+                ].map((event, idx) => (
+                  <div key={idx} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-bold text-gray-900">{event.title}</h4>
+                      <span className="text-xs font-bold text-[#0891B2] bg-blue-50 px-3 py-1 rounded">
+                        {event.date}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">{event.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Call to Action */}
+            <div className="bg-gradient-to-r from-[#0891B2] to-cyan-400 rounded-xl p-6 sm:p-8 text-white text-center">
+              <h3 className="text-2xl font-bold mb-2">Join the VVS Concierge Circle</h3>
+              <p className="opacity-90 mb-6">
+                Experience curated access, exclusive events, and an elite community of innovators.
+              </p>
+              <button className="bg-white text-[#0891B2] font-bold px-8 py-3 rounded-lg hover:bg-gray-100 transition">
+                Learn More & Upgrade
+              </button>
             </div>
           </div>
         )}
