@@ -72,7 +72,7 @@ export default function ListPropertyPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-900 to-neutral-950">
+    <div className="min-h-screen bg-gradient-to-br from-white to-gray-50">
       {/* Header */}
       <div className="bg-gradient-to-r from-[#0891B2] to-cyan-400 p-8 text-white">
         <div className="max-w-4xl mx-auto">
@@ -89,12 +89,12 @@ export default function ListPropertyPage() {
 
       {/* Form */}
       <div className="max-w-4xl mx-auto p-8">
-        <div className="bg-neutral-800 border border-neutral-700 rounded-xl p-8">
+        <div className="bg-white border border-gray-200 rounded-xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Property Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -103,13 +103,13 @@ export default function ListPropertyPage() {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="e.g., Brooklyn Loft"
-                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
+                  className="w-full px-4 py-2 bg-gray-100 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
                   disabled={isSubmitting}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   City <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -118,7 +118,7 @@ export default function ListPropertyPage() {
                   value={formData.city}
                   onChange={handleChange}
                   placeholder="e.g., New York"
-                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
+                  className="w-full px-4 py-2 bg-gray-100 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
                   disabled={isSubmitting}
                 />
               </div>
@@ -127,7 +127,7 @@ export default function ListPropertyPage() {
             {/* Location */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Latitude
                 </label>
                 <input
@@ -136,13 +136,13 @@ export default function ListPropertyPage() {
                   value={formData.latitude}
                   onChange={handleChange}
                   placeholder="40.6501"
-                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
+                  className="w-full px-4 py-2 bg-gray-100 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
                   disabled={isSubmitting}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Longitude
                 </label>
                 <input
@@ -151,7 +151,7 @@ export default function ListPropertyPage() {
                   value={formData.longitude}
                   onChange={handleChange}
                   placeholder="-73.9496"
-                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
+                  className="w-full px-4 py-2 bg-gray-100 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
                   disabled={isSubmitting}
                 />
               </div>
@@ -159,7 +159,7 @@ export default function ListPropertyPage() {
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-neutral-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Description
               </label>
               <textarea
@@ -168,7 +168,7 @@ export default function ListPropertyPage() {
                 onChange={handleChange}
                 placeholder="Describe your property..."
                 rows={4}
-                className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
+                className="w-full px-4 py-2 bg-gray-100 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
                 disabled={isSubmitting}
               />
             </div>
@@ -176,7 +176,7 @@ export default function ListPropertyPage() {
             {/* Financial Info */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Valuation (USD) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -185,13 +185,13 @@ export default function ListPropertyPage() {
                   value={formData.valuationUsd}
                   onChange={handleChange}
                   placeholder="5000000"
-                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
+                  className="w-full px-4 py-2 bg-gray-100 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
                   disabled={isSubmitting}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Annual ROI (%)
                 </label>
                 <input
@@ -200,13 +200,13 @@ export default function ListPropertyPage() {
                   value={formData.annualYieldPercentage}
                   onChange={handleChange}
                   placeholder="5"
-                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
+                  className="w-full px-4 py-2 bg-gray-100 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
                   disabled={isSubmitting}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Max Shares
                 </label>
                 <input
@@ -215,7 +215,7 @@ export default function ListPropertyPage() {
                   value={formData.maxShareSupply}
                   onChange={handleChange}
                   placeholder="1000"
-                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
+                  className="w-full px-4 py-2 bg-gray-100 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
                   disabled={isSubmitting}
                 />
               </div>
@@ -224,7 +224,7 @@ export default function ListPropertyPage() {
             {/* Image & Type */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-neutral-300 mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Image URL
                 </label>
                 <input
@@ -233,7 +233,7 @@ export default function ListPropertyPage() {
                   value={formData.imageUrl}
                   onChange={handleChange}
                   placeholder="https://..."
-                  className="w-full px-4 py-2 bg-neutral-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
+                  className="w-full px-4 py-2 bg-gray-100 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
                   disabled={isSubmitting}
                 />
               </div>
@@ -245,10 +245,10 @@ export default function ListPropertyPage() {
                     name="isArtistHouse"
                     checked={formData.isArtistHouse}
                     onChange={handleChange}
-                    className="w-5 h-5 rounded bg-neutral-700 border-neutral-600 text-[#0891B2]"
+                    className="w-5 h-5 rounded bg-neutral-700 border-gray-300 text-[#0891B2]"
                     disabled={isSubmitting}
                   />
-                  <span className="text-sm font-medium text-neutral-300">Artist House Venue</span>
+                  <span className="text-sm font-medium text-gray-700">Artist House Venue</span>
                 </label>
               </div>
             </div>
@@ -266,7 +266,7 @@ export default function ListPropertyPage() {
 
               <Link
                 href="/invest"
-                className="py-3 px-6 bg-neutral-700 text-white font-bold rounded-lg hover:bg-neutral-600 transition text-center"
+                className="py-3 px-6 bg-gray-100 text-gray-900 font-bold rounded-lg hover:bg-neutral-600 transition text-center"
               >
                 Cancel
               </Link>
