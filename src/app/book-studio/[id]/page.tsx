@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, ArrowLeft, Share2, Check, AlertCircle, MapPin, Search, MessageCircle } from 'lucide-react';
+import { Calendar, Clock, ArrowLeft, Share2, Check, AlertCircle, MapPin, Search, MessageCircle, Crown } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { useParams } from 'next/navigation';
@@ -42,6 +42,9 @@ export default function BookPropertyPage() {
   const [addressSearch, setAddressSearch] = useState('');
   const [mapCoordinates, setMapCoordinates] = useState<{ lat: string; lng: string } | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [vvsMembership, setVvsMembership] = useState(false);
+  const VVS_MEMBERSHIP_FEE = 299;
+
 
   useEffect(() => {
     fetchProperty();
@@ -175,11 +178,16 @@ export default function BookPropertyPage() {
   }
 
   const calculateBookingTotal = () => {
+    let total = 0;
     if (bookingType === 'hourly') {
-      return hours * property.hourlyRate;
+      total = hours * property.hourlyRate;
     } else {
-      return days * property.dailyRate;
+      total = days * property.dailyRate;
     }
+    if (vvsMembership) {
+      total += VVS_MEMBERSHIP_FEE;
+    }
+    return total;
   };
 
   const handleDateSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -215,6 +223,7 @@ export default function BookPropertyPage() {
           duration: bookingType === 'hourly' ? hours : days,
           durationUnit: bookingType === 'hourly' ? 'hours' : 'days',
           totalPrice: calculateBookingTotal(),
+          vvsMembership,
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
@@ -628,7 +637,23 @@ export default function BookPropertyPage() {
               </div>
 
               {/* Price */}
-              <div className="py-4 sm:py-6 space-y-2">
+              <div className="py-4 sm:py-6 space-y-3">
+                <div className="space-y-2 pb-3 border-b border-gray-200">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-600">
+                      {bookingType === 'hourly' ? `${hours}h × $${property.hourlyRate}` : `${days}d × $${property.dailyRate}`}
+                    </span>
+                    <span className="font-semibold text-gray-900">
+                      ${bookingType === 'hourly' ? hours * property.hourlyRate : days * property.dailyRate}
+                    </span>
+                  </div>
+                  {vvsMembership && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">VVS Membership</span>
+                      <span className="font-semibold text-gray-900">${VVS_MEMBERSHIP_FEE}</span>
+                    </div>
+                  )}
+                </div>
                 <div className="flex justify-between items-center">
                   <span className="text-base sm:text-lg font-bold text-gray-900">Total</span>
                   <span className="text-2xl sm:text-2xl font-bold text-[#D946EF]">${calculateBookingTotal()}</span>
