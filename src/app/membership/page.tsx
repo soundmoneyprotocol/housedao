@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Crown, Sparkles, Zap } from 'lucide-react';
+import { Crown, Sparkles, Zap, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 export default function MembershipPage() {
@@ -10,6 +10,10 @@ export default function MembershipPage() {
       {/* Header */}
       <div className="bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white py-12 sm:py-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-8">
+          <Link href="/invest" className="flex items-center gap-2 mb-6 w-fit hover:opacity-80 transition">
+            <ArrowLeft className="w-5 h-5" />
+            Back
+          </Link>
           <h1 className="text-4xl sm:text-5xl font-bold mb-4">VVS Membership Tiers</h1>
           <p className="text-lg sm:text-xl opacity-90">
             Cut above the rest. Color the room creatively. Carats is the heavy weight in the room.
