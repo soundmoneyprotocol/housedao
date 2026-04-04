@@ -16,6 +16,7 @@ export default function SignupPage() {
     confirmPassword: '',
   });
   const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,22 +45,15 @@ export default function SignupPage() {
           data: {
             full_name: formData.fullName,
           },
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
         },
       });
 
       if (signUpError) {
         toast.error(signUpError.message || 'Signup failed');
       } else {
-        toast.success('Account created! Logging you in...');
-        // Auto-login after signup
-        const { error: loginError } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        });
-
-        if (!loginError) {
-          router.push('/portfolio');
-        }
+        setEmailSent(true);
+        toast.success('Check your email to verify your account');
       }
     } catch (err: any) {
       toast.error('An error occurred during signup');
@@ -72,6 +66,39 @@ export default function SignupPage() {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
+
+  if (emailSent) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 flex items-center justify-center px-4">
+        <div className="w-full max-w-md text-center">
+          <Link href="/" className="inline-flex items-center gap-2 mb-6">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#0891B2] to-cyan-400 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold">H</span>
+            </div>
+            <span className="text-xl font-bold text-gray-900">HouseDAO</span>
+          </Link>
+          <div className="bg-white border border-gray-200 rounded-2xl p-8">
+            <div className="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Mail className="w-6 h-6 text-[#0891B2]" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Verify your email</h1>
+            <p className="text-gray-600 mb-6">
+              We've sent a verification link to <strong>{formData.email}</strong>. Click the link in your email to confirm your account and start investing.
+            </p>
+            <p className="text-sm text-gray-500 mb-6">
+              Don't see the email? Check your spam folder or wait a few moments.
+            </p>
+            <button
+              onClick={() => setEmailSent(false)}
+              className="w-full py-3 px-4 text-[#0891B2] font-bold border-2 border-[#0891B2] rounded-lg hover:bg-cyan-50 transition"
+            >
+              Back to Sign Up
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 flex items-center justify-center px-4">
