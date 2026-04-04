@@ -263,7 +263,7 @@ export default function InvestPage() {
             <div className="flex items-end">
               <Link
                 href="/list-property"
-                className="w-full py-2 px-4 bg-gradient-to-r from-[#0891B2] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#0891B2]/50 transition text-center"
+                className="w-full py-2 px-4 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#0891B2]/50 transition text-center"
               >
                 + List Property
               </Link>
@@ -404,7 +404,7 @@ function PropertyCard({ property, onInvest }: PropertyCardProps) {
               </div>
               <div className="w-full bg-neutral-700 rounded-full h-2 overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-[#0891B2] to-pink-400 h-full transition-all"
+                  className="bg-gradient-to-r from-[#0891B2] to-cyan-400 h-full transition-all"
                   style={{
                     width: `${((property.sharesOutstanding || 0) / property.maxShareSupply) * 100}%`,
                   }}
@@ -416,10 +416,16 @@ function PropertyCard({ property, onInvest }: PropertyCardProps) {
               <button
                 onClick={onInvest}
                 disabled={property.availableShares === 0}
-                className="flex-1 py-2 px-4 bg-gradient-to-r from-[#0891B2] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#0891B2]/50 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
+                title={property.availableShares === 0 ? 'All shares sold out for this property' : 'Invest using crypto wallet or Stripe card'}
+                className="flex-1 py-2 px-4 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#0891B2]/50 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm relative group"
               >
                 <Share2 className="w-4 h-4 inline mr-2" />
                 Invest
+                {property.availableShares === 0 && (
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-gray-700 text-xs text-white rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition pointer-events-none">
+                    All shares sold
+                  </div>
+                )}
               </button>
               <Link
                 href={`/book-studio/${property.id}`}
@@ -446,7 +452,7 @@ function PropertyCard({ property, onInvest }: PropertyCardProps) {
 
             <Link
               href={`/book-studio/${property.id}`}
-              className="w-full py-3 px-4 bg-gradient-to-r from-[#0891B2] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#0891B2]/50 transition text-center flex items-center justify-center gap-2"
+              className="w-full py-3 px-4 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#0891B2]/50 transition text-center flex items-center justify-center gap-2"
             >
               <Clock className="w-4 h-4" />
               Book Now
@@ -474,14 +480,16 @@ function InvestmentModal({ property, walletProvider, onClose, onSuccess }: Inves
 
   const handleInvest = async () => {
     if (shares <= 0 || shares > property.availableShares) {
-      toast.error('Invalid share amount');
+      toast.error('Please select a valid number of shares');
       return;
     }
 
     setIsLoading(true);
     try {
-      // Safely attempt to use wallet provider if available
       let accountAddress = null;
+      let paymentMethod = 'fiat'; // Default to fiat/Stripe
+
+      // Check if wallet is available
       if (walletProvider) {
         try {
           const accounts = await Promise.race([
@@ -489,14 +497,75 @@ function InvestmentModal({ property, walletProvider, onClose, onSuccess }: Inves
             new Promise((_, reject) => setTimeout(() => reject(new Error('Wallet timeout')), 3000))
           ]);
           accountAddress = accounts[0];
+          paymentMethod = 'crypto';
         } catch (walletError: any) {
-          // Silently fall back to fiat payment on any wallet error
           const errorMsg = walletError?.message || String(walletError);
-          if (!errorMsg.includes('timeout') && !errorMsg.includes('User rejected')) {
-            console.warn('Wallet connection failed:', walletError);
+          
+          // User rejected connection
+          if (errorMsg.includes('User rejected')) {
+            setIsLoading(false);
+            toast.error('Wallet connection cancelled. Using Stripe payment instead.');
+            return;
           }
-          // No toast - silently proceed with fiat payment
+          
+          // Timeout or other error - offer help
+          if (errorMsg.includes('timeout')) {
+            setIsLoading(false);
+            toast((t) => (
+              <div className="space-y-2">
+                <p className="font-bold">Wallet not responding</p>
+                <p className="text-sm">No worries! We can process your investment via Stripe.</p>
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={() => {
+                      toast.dismiss(t.id);
+                      proceedWithStripe();
+                    }}
+                    className="px-3 py-1 bg-[#0891B2] text-white rounded text-sm font-bold"
+                  >
+                    Pay with Stripe
+                  </button>
+                  <button
+                    onClick={() => toast.dismiss(t.id)}
+                    className="px-3 py-1 bg-gray-500 text-white rounded text-sm"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            ), { duration: 5000 });
+            return;
+          }
         }
+      } else {
+        // No wallet detected
+        setIsLoading(false);
+        toast((t) => (
+          <div className="space-y-2 max-w-sm">
+            <p className="font-bold">No crypto wallet detected</p>
+            <p className="text-sm">You can still invest using Stripe. Or install a Web3 wallet:</p>
+            <div className="flex flex-col gap-2 mt-2">
+              <button
+                onClick={() => {
+                  toast.dismiss(t.id);
+                  proceedWithStripe();
+                }}
+                className="w-full px-3 py-2 bg-[#0891B2] text-white rounded text-sm font-bold hover:bg-cyan-600"
+              >
+                Continue with Stripe Payment
+              </button>
+              <a
+                href="https://chromewebstore.google.com/detail/claude/YOUR_EXTENSION_ID"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full px-3 py-2 bg-gray-600 text-white rounded text-sm font-bold text-center hover:bg-gray-700"
+              >
+                Install Claude Wallet
+              </a>
+            </div>
+          </div>
+        ), { duration: 6000 });
+        return;
       }
 
       const response = await fetch('/api/homedao/invest', {
@@ -507,18 +576,56 @@ function InvestmentModal({ property, walletProvider, onClose, onSuccess }: Inves
           sharesDesired: shares,
           totalUSD: totalCost * 100,
           walletAddress: accountAddress,
+          paymentMethod,
         }),
       });
 
       if (response.ok) {
+        toast.success(`Investment confirmed via ${paymentMethod === 'crypto' ? 'blockchain' : 'Stripe'}!`);
         onSuccess();
       } else {
         const error = await response.json();
-        toast.error(error.error || 'Investment failed');
+        toast.error(error.error || 'Investment processing failed');
       }
     } catch (error) {
       console.error('Investment error:', error);
-      toast.error('Failed to process investment');
+      const errorMsg = String(error);
+      
+      if (errorMsg.includes('insufficient')) {
+        toast.error('Insufficient funds. Please add more crypto to your wallet.');
+      } else if (errorMsg.includes('network')) {
+        toast.error('Network error. Please check your connection and try again.');
+      } else {
+        toast.error('Failed to process investment');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const proceedWithStripe = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/homedao/invest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          propertyId: property.blockchainId,
+          sharesDesired: shares,
+          totalUSD: totalCost * 100,
+          paymentMethod: 'fiat',
+        }),
+      });
+
+      if (response.ok) {
+        toast.success('Proceeding to Stripe payment...');
+        onSuccess();
+      } else {
+        toast.error('Failed to initiate payment');
+      }
+    } catch (error) {
+      console.error('Stripe payment error:', error);
+      toast.error('Could not process Stripe payment');
     } finally {
       setIsLoading(false);
     }
@@ -589,20 +696,31 @@ function InvestmentModal({ property, walletProvider, onClose, onSuccess }: Inves
           </div>
         </div>
 
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2 px-4 bg-neutral-700 text-white font-bold rounded-lg hover:bg-neutral-600 transition"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleInvest}
-            disabled={isLoading}
-            className="flex-1 py-2 px-4 bg-gradient-to-r from-[#0891B2] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#0891B2]/50 disabled:opacity-50 transition"
-          >
-            {isLoading ? 'Processing...' : 'Invest Now'}
-          </button>
+        <div className="space-y-3">
+          <div className="text-xs text-neutral-400 space-y-1">
+            <p><span className="font-bold">Payment methods:</span></p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Crypto wallet (MetaMask, WalletConnect, etc.)</li>
+              <li>Stripe (card payment)</li>
+            </ul>
+            <p className="mt-2 italic">No wallet? No problem - Stripe payment is always available.</p>
+          </div>
+          
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 py-2 px-4 bg-neutral-700 text-white font-bold rounded-lg hover:bg-neutral-600 transition text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleInvest}
+              disabled={isLoading}
+              className="flex-1 py-2 px-4 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#0891B2]/50 disabled:opacity-50 transition text-sm"
+            >
+              {isLoading ? 'Processing...' : 'Invest Now'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
