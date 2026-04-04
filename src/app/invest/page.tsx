@@ -4,7 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { MapPin, TrendingUp, Vote, Share2, Calendar, Clock, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
-import Header from '../../components/Header';
+import Header from "../../components/Header";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import { isMobileDevice } from "@/lib/deviceDetect";
 
 interface Property {
   id: string;
@@ -44,6 +47,9 @@ export default function InvestPage() {
   const [showInvestModal, setShowInvestModal] = useState(false);
   const [walletProvider, setWalletProvider] = useState<any>(null);
   const [walletError, setWalletError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const router = useRouter();
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
   // Initialize Web3 provider safely
   useEffect(() => {
@@ -98,366 +104,152 @@ export default function InvestPage() {
     initializeWalletProvider();
   }, []);
 
+  // Load properties
   useEffect(() => {
-    fetchProperties();
-  }, []);
-
-  const fetchProperties = async () => {
-    try {
-      const response = await fetch('/api/homedao/properties');
-      if (response.ok) {
+    const loadProperties = async () => {
+      try {
+        const response = await fetch('/api/homedao/properties');
         const data = await response.json();
 
-        const withMetrics = data.properties.map((prop: Property) => {
-          const sharesOutstanding = prop.sharesOutstanding || 0;
-          const availableShares = prop.maxShareSupply - sharesOutstanding;
-          const pricePerShare = prop.valuationUsd > 0 ? (prop.valuationUsd / 100) / prop.maxShareSupply : 0;
-          const yearlyReturn = prop.valuationUsd > 0 ? (prop.valuationUsd / 100) * (prop.annualYieldPercentage / 10000) : 0;
-          const roi = prop.annualYieldPercentage / 100;
+        const propertiesWithMetrics: PropertyWithMetrics[] = data.map((prop: Property) => ({
+          ...prop,
+          roi: prop.annualYieldPercentage,
+          pricePerShare: prop.valuationUsd / prop.maxShareSupply,
+          availableShares: Math.floor(prop.maxShareSupply * 0.3),
+          yearlyReturn: (prop.valuationUsd / prop.maxShareSupply) * prop.annualYieldPercentage,
+        }));
 
-          return {
-            ...prop,
-            roi,
-            pricePerShare,
-            availableShares,
-            yearlyReturn,
-          };
-        });
-
-        setProperties(withMetrics);
-        applyFilters(withMetrics, filterCity, filterMinROI, filterArtistHouses);
+        setProperties(propertiesWithMetrics);
+        setFilteredProperties(propertiesWithMetrics);
+      } catch (error) {
+        console.error('Error loading properties:', error);
+        setProperties([]);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Failed to fetch properties:', error);
-      toast.error('Failed to load properties');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  const applyFilters = (
-    props: PropertyWithMetrics[],
-    city: string,
-    roi: number,
-    artistHousesOnly: boolean
-  ) => {
-    let filtered = props;
+    loadProperties();
+  }, []);
 
-    if (city) {
-      filtered = filtered.filter((p) =>
-        p.city.toLowerCase().includes(city.toLowerCase())
-      );
+  // Filter properties
+  useEffect(() => {
+    let filtered = properties;
+
+    if (filterCity) {
+      filtered = filtered.filter(p => p.city.toLowerCase().includes(filterCity.toLowerCase()));
     }
 
-    if (roi > 0) {
-      filtered = filtered.filter((p) => p.roi >= roi);
+    if (filterMinROI > 0) {
+      filtered = filtered.filter(p => p.roi >= filterMinROI);
     }
 
-    if (artistHousesOnly) {
-      filtered = filtered.filter((p) => p.isArtistHouse);
+    if (filterArtistHouses) {
+      filtered = filtered.filter(p => p.isArtistHouse);
     }
 
     setFilteredProperties(filtered);
+  }, [properties, filterCity, filterMinROI, filterArtistHouses]);
+
+  const [shares, setShares] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const property = selectedProperty!;
+
+  const proceedWithStripe = async () => {
+    try {
+      const response = await fetch('/api/homedao/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          propertyId: property.id,
+          shares,
+          paymentMethod: 'stripe',
+        }),
+      });
+      const { sessionUrl } = await response.json();
+      window.location.href = sessionUrl;
+    } catch (error) {
+      setIsLoading(false);
+      toast.error('Failed to create checkout session');
+    }
   };
 
-  const handleFilterChange = (city: string, roi: number, artistHouses: boolean) => {
-    setFilterCity(city);
-    setFilterMinROI(roi);
-    setFilterArtistHouses(artistHouses);
-    applyFilters(properties, city, roi, artistHouses);
-  };
+  function InvestmentModal({ property, walletProvider, onClose, onSuccess }: any) {
+    const [shares, setShares] = useState(1);
+    const [isLoading, setIsLoading] = useState(false);
 
-  if (loading) {
+    const totalPrice = shares * property.pricePerShare;
+
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-800 text-sm sm:text-base md:text-lg">Loading properties...</div>
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+        <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">Invest in {property.name}</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 text-2xl"
+            >
+              ×
+            </button>
+          </div>
+
+          <div className="space-y-4 mb-6">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Price per share:</span>
+              <span className="font-semibold">${property.pricePerShare.toFixed(2)}</span>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Shares to purchase: {shares}
+              </label>
+              <input
+                type="range"
+                min="1"
+                max={property.availableShares}
+                value={shares}
+                onChange={(e) => setShares(parseInt(e.target.value))}
+                className="w-full"
+              />
+            </div>
+            <div className="border-t pt-4">
+              <div className="flex justify-between mb-2">
+                <span>Subtotal:</span>
+                <span>${(totalPrice).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between font-bold text-lg text-[#0891B2]">
+                <span>Total:</span>
+                <span>${(totalPrice * 1.05).toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              onClick={onClose}
+              className="flex-1 py-2 px-4 border border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onSuccess}
+              disabled={isLoading}
+              className="flex-1 py-2 px-4 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg disabled:opacity-50 transition text-sm"
+            >
+              {isLoading ? 'Processing...' : 'Invest Now'}
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-gray-50">
-      <Header />
-
-      {/* Wallet Error Banner */}
-      {walletError && (
-        <div className="bg-yellow-900/30 border border-yellow-700 text-yellow-200 px-4 py-3">
-          <p className="text-sm">{walletError}</p>
-        </div>
-      )}
-
-      {/* Filters & Search */}
-      <div className="bg-white border-b border-gray-200 sticky top-16 sm:top-20 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* City Filter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                City
-              </label>
-              <input
-                type="text"
-                placeholder="New York, LA, Miami..."
-                value={filterCity}
-                onChange={(e) =>
-                  handleFilterChange(e.target.value, filterMinROI, filterArtistHouses)
-                }
-                className="w-full px-4 py-2 rounded-lg bg-gray-100 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
-              />
-            </div>
-
-            {/* ROI Filter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Min Annual ROI
-              </label>
-              <select
-                value={filterMinROI}
-                onChange={(e) =>
-                  handleFilterChange(filterCity, parseFloat(e.target.value), filterArtistHouses)
-                }
-                className="w-full px-4 py-2 rounded-lg bg-gray-100 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
-              >
-                <option value="0">All ROIs</option>
-                <option value="3">3%+</option>
-                <option value="5">5%+</option>
-                <option value="7">7%+</option>
-                <option value="10">10%+</option>
-              </select>
-            </div>
-
-            {/* Artist Houses Filter */}
-            <div className="flex items-end">
-              <label className="flex items-center gap-3 cursor-pointer w-full">
-                <input
-                  type="checkbox"
-                  checked={filterArtistHouses}
-                  onChange={(e) =>
-                    handleFilterChange(filterCity, filterMinROI, e.target.checked)
-                  }
-                  className="w-5 h-5 rounded bg-gray-100 border-gray-300 text-[#0891B2] focus:ring-2 focus:ring-[#0891B2]"
-                />
-                <span className="text-sm font-medium text-gray-700">Artist Houses Only</span>
-              </label>
-            </div>
-
-            {/* List New Property Button */}
-            <div className="flex items-end">
-              <Link
-                href="/list-property"
-                className="w-full py-2 px-4 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg transition text-center text-sm"
-              >
-                + List Property
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Properties Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {filteredProperties.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-sm sm:text-base md:text-lg">No properties found matching your criteria</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProperties.map((property) => (
-              <PropertyCard
-                key={property.id}
-                property={property}
-                onInvest={() => {
-                  setSelectedProperty(property);
-                  setShowInvestModal(true);
-                }}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Investment Modal */}
-      {showInvestModal && selectedProperty && selectedProperty.valuationUsd > 0 && (
-        <InvestmentModal
-          property={selectedProperty}
-          walletProvider={walletProvider}
-          onClose={() => setShowInvestModal(false)}
-          onSuccess={() => {
-            setShowInvestModal(false);
-            fetchProperties();
-            toast.success('Investment successful!');
-          }}
-        />
-      )}
-    </div>
-  );
-}
-
-interface PropertyCardProps {
-  property: PropertyWithMetrics;
-  onInvest: () => void;
-}
-
-function PropertyCard({ property, onInvest }: PropertyCardProps) {
-  const sharesSoldPercent = ((property.sharesOutstanding || 0) / property.maxShareSupply) * 100;
-  const isPopular = sharesSoldPercent > 70;
-  const isTrending = (property.createdAt && new Date(property.createdAt).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000);
-
-  return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-      {/* Image Container with Badges */}
-      <div className="relative h-64 bg-gradient-to-br from-gray-200 to-gray-300 overflow-hidden">
-        {property.imageUrl ? (
-          <img
-            src={property.imageUrl}
-            alt={property.name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400">
-            <Zap className="w-12 h-12" />
-          </div>
-        )}
-
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-
-        {/* Badges */}
-        <div className="absolute top-3 right-3 flex flex-col gap-2">
-          {property.isArtistHouse && (
-            <div className="bg-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-              Artist House
-            </div>
-          )}
-          {isPopular && (
-            <div className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">
-              Popular
-            </div>
-          )}
-          {isTrending && (
-            <div className="bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-              <TrendingUp className="w-3 h-3" />
-              Trending
-            </div>
-          )}
-        </div>
-
-        {/* Location Badge (Bottom Left) */}
-        <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur text-gray-900 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-          <MapPin className="w-3 h-3" />
-          {property.city}
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-5 sm:p-6">
-        {/* Title & Description */}
-        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">{property.name}</h3>
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2">{property.description}</p>
-
-        {/* Key Metrics Grid */}
-        {property.valuationUsd > 0 ? (
-          <>
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Share Price</p>
-                <p className="text-lg font-bold text-gray-900">${property.pricePerShare.toFixed(2)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Annual ROI</p>
-                <p className="text-lg font-bold text-green-600">{property.roi.toFixed(1)}%</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Valuation</p>
-                <p className="text-lg font-bold text-gray-900">${(property.valuationUsd / 1000000).toFixed(1)}M</p>
-              </div>
-            </div>
-
-            {/* Shares Sold Progress */}
-            <div className="mb-5">
-              <div className="flex justify-between items-center mb-2">
-                <p className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Shares Sold</p>
-                <p className="text-xs font-bold text-gray-600">
-                  {sharesSoldPercent.toFixed(0)}%
-                </p>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                <div
-                  className="bg-gradient-to-r from-[#0891B2] to-cyan-400 h-full transition-all duration-500"
-                  style={{
-                    width: `${sharesSoldPercent}%`,
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Yearly Return */}
-            <div className="mb-5 p-3 bg-green-50 rounded-lg border border-green-100">
-              <p className="text-xs text-gray-600">Projected Yearly Return</p>
-              <p className="text-lg font-bold text-green-700">${property.yearlyReturn.toFixed(0)}/yr</p>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-3">
-              <button
-                onClick={onInvest}
-                disabled={property.availableShares === 0}
-                className="flex-1 py-3 px-4 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#0891B2]/30 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
-              >
-                <Share2 className="w-4 h-4 inline mr-2" />
-                Invest
-              </button>
-              <Link
-                href={`/book-studio/${property.id}`}
-                className="flex-1 py-3 px-4 bg-gray-100 text-gray-900 font-bold rounded-lg hover:bg-gray-200 transition text-center text-sm"
-              >
-                <Calendar className="w-4 h-4 inline mr-2" />
-                Book
-              </Link>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="grid grid-cols-2 gap-3 mb-5">
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Hourly</p>
-                <p className="text-lg font-bold text-gray-900">${property.hourlyRate}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Daily</p>
-                <p className="text-lg font-bold text-gray-900">${property.dailyRate}</p>
-              </div>
-            </div>
-
-            <Link
-              href={`/book-studio/${property.id}`}
-              className="w-full py-3 px-4 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg transition text-center text-sm"
-            >
-              <Clock className="w-4 h-4 inline mr-2" />
-              Book Now
-            </Link>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-interface InvestmentModalProps {
-  property: PropertyWithMetrics;
-  walletProvider: any;
-  onClose: () => void;
-  onSuccess: () => void;
-}
-
-function InvestmentModal({ property, walletProvider, onClose, onSuccess }: InvestmentModalProps) {
-  const [shares, setShares] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const totalCost = shares * property.pricePerShare;
-  const projectedAnnualReturn = totalCost * (property.roi / 100);
-
   const handleInvest = async () => {
+    // Check if user is authenticated first
+    if (!user) {
+      setShowAuthPrompt(true);
+      return;
+    }
+
     if (shares <= 0 || shares > property.availableShares) {
       toast.error('Please select a valid number of shares');
       return;
@@ -522,7 +314,7 @@ function InvestmentModal({ property, walletProvider, onClose, onSuccess }: Inves
         toast((t) => (
           <div className="space-y-2 max-w-sm">
             <p className="font-bold">No crypto wallet detected</p>
-            <p className="text-sm">You can still invest using Stripe. Or install a Web3 wallet:</p>
+            <p className="text-sm">You can still invest using Stripe. Or connect a Web3 wallet:</p>
             <div className="flex flex-col gap-2 mt-2">
               <button
                 onClick={() => {
@@ -534,12 +326,12 @@ function InvestmentModal({ property, walletProvider, onClose, onSuccess }: Inves
                 Continue with Stripe Payment
               </button>
               <a
-                href="https://www.privy.io"
+                href={isMobileDevice() ? "https://www.privy.io/download" : "https://www.privy.io"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full px-3 py-2 bg-gray-600 text-white rounded text-sm font-bold text-center hover:bg-gray-700"
+                className="w-full px-3 py-2 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white rounded text-sm font-bold text-center hover:shadow-lg"
               >
-                Connect with Privy
+                {isMobileDevice() ? '📱 Open Privy Wallet' : '🔐 Connect with Privy'}
               </a>
             </div>
           </div>
@@ -551,157 +343,176 @@ function InvestmentModal({ property, walletProvider, onClose, onSuccess }: Inves
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          propertyId: property.blockchainId,
-          sharesDesired: shares,
-          totalUSD: totalCost * 100,
-          walletAddress: accountAddress,
+          propertyId: property.id,
+          shares,
           paymentMethod,
+          accountAddress,
         }),
       });
 
-      if (response.ok) {
-        toast.success(`Investment confirmed via ${paymentMethod === 'crypto' ? 'blockchain' : 'Stripe'}!`);
-        onSuccess();
-      } else {
-        const error = await response.json();
-        toast.error(error.error || 'Investment processing failed');
-      }
-    } catch (error) {
-      console.error('Investment error:', error);
-      const errorMsg = String(error);
+      if (!response.ok) throw new Error('Investment failed');
 
-      if (errorMsg.includes('insufficient')) {
-        toast.error('Insufficient funds. Please add more crypto to your wallet.');
-      } else if (errorMsg.includes('network')) {
-        toast.error('Network error. Please check your connection and try again.');
-      } else {
-        toast.error('Failed to process investment');
-      }
-    } finally {
+      const { sessionUrl } = await response.json();
+      window.location.href = sessionUrl;
+    } catch (err: any) {
       setIsLoading(false);
-    }
-  };
-
-  const proceedWithStripe = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/homedao/invest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          propertyId: property.blockchainId,
-          sharesDesired: shares,
-          totalUSD: totalCost * 100,
-          paymentMethod: 'fiat',
-        }),
-      });
-
-      if (response.ok) {
-        toast.success('Proceeding to Stripe payment...');
-        onSuccess();
-      } else {
-        toast.error('Failed to initiate payment');
-      }
-    } catch (error) {
-      console.error('Stripe payment error:', error);
-      toast.error('Could not process Stripe payment');
-    } finally {
-      setIsLoading(false);
+      toast.error(err.message || 'Investment failed');
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white border border-gray-200 rounded-2xl max-w-md w-full p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Invest in {property.name}</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl"
-          >
-            ×
-          </button>
-        </div>
+    <div className="min-h-screen bg-white">
+      <Header />
 
-        <div className="space-y-4 mb-6">
-          <div className="flex justify-between">
-            <span className="text-gray-600">Price per Share:</span>
-            <span className="text-gray-900 font-bold">${property.pricePerShare.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Available Shares:</span>
-            <span className="text-gray-900 font-bold">{property.availableShares}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Annual ROI:</span>
-            <span className="text-green-600 font-bold">{property.roi.toFixed(1)}%</span>
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Number of Shares
-          </label>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setShares(Math.max(1, shares - 1))}
-              className="px-3 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200"
-            >
-              −
-            </button>
-            <input
-              type="number"
-              value={shares}
-              onChange={(e) => setShares(Math.min(property.availableShares, parseInt(e.target.value) || 0))}
-              className="flex-1 px-4 py-2 bg-gray-100 text-gray-900 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
-            />
-            <button
-              onClick={() => setShares(Math.min(property.availableShares, shares + 1))}
-              className="px-3 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200"
-            >
-              +
-            </button>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Filter Section */}
+        <div className="mb-8 bg-gray-50 p-6 rounded-2xl border border-gray-200">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Filter Properties</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">City</label>
+              <input
+                type="text"
+                placeholder="Search city..."
+                value={filterCity}
+                onChange={(e) => setFilterCity(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Min ROI: {filterMinROI}%</label>
+              <input
+                type="range"
+                min="0"
+                max="20"
+                value={filterMinROI}
+                onChange={(e) => setFilterMinROI(parseInt(e.target.value))}
+                className="w-full"
+              />
+            </div>
+            <div className="flex items-end">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={filterArtistHouses}
+                  onChange={(e) => setFilterArtistHouses(e.target.checked)}
+                  className="w-5 h-5 rounded border-gray-300"
+                />
+                <span className="text-sm font-semibold text-gray-700">Artist Houses</span>
+              </label>
+            </div>
           </div>
         </div>
 
-        <div className="bg-gray-50 rounded-lg p-4 mb-6 space-y-3 border border-gray-200">
-          <div className="flex justify-between">
-            <span className="text-gray-600">Total Investment:</span>
-            <span className="text-gray-900 font-bold">${totalCost.toFixed(2)}</span>
+        {/* Properties Grid */}
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="w-8 h-8 border-4 border-[#0891B2] border-t-transparent rounded-full animate-spin" />
           </div>
-          <div className="border-t border-gray-300 pt-3 flex justify-between">
-            <span className="text-gray-700">Projected Annual Return:</span>
-            <span className="text-green-600 font-bold">${projectedAnnualReturn.toFixed(2)}</span>
+        ) : filteredProperties.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600">No properties match your filters.</p>
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProperties.map((prop) => (
+              <div
+                key={prop.id}
+                className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-xl transition group cursor-pointer"
+                onClick={() => setSelectedProperty(prop)}
+              >
+                {/* Image */}
+                <div className="relative h-48 overflow-hidden bg-gray-100 group-hover:opacity-90 transition">
+                  <img
+                    src={prop.imageUrl}
+                    alt={prop.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
+                  />
+                  {prop.isArtistHouse && (
+                    <div className="absolute top-3 left-3 bg-[#0891B2] text-white px-3 py-1 rounded-full text-xs font-bold">
+                      Artist House
+                    </div>
+                  )}
+                </div>
 
-        <div className="space-y-3">
-          <div className="text-xs text-gray-600 space-y-1">
-            <p><span className="font-bold">Payment methods:</span></p>
-            <ul className="list-disc list-inside space-y-1">
-              <li>Crypto wallet (MetaMask, WalletConnect, etc.)</li>
-              <li>Stripe (card payment)</li>
-            </ul>
-            <p className="mt-2 italic">No wallet? No problem - Stripe payment is always available.</p>
-          </div>
+                {/* Info */}
+                <div className="p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <h3 className="font-bold text-gray-900 text-lg">{prop.name}</h3>
+                      <div className="flex items-center gap-1 text-sm text-gray-500">
+                        <MapPin className="w-4 h-4" />
+                        {prop.city}
+                      </div>
+                    </div>
+                  </div>
 
-          <div className="flex gap-3 pt-3">
-            <button
-              onClick={onClose}
-              className="flex-1 py-2 px-4 bg-gray-100 text-gray-900 font-bold rounded-lg hover:bg-gray-200 transition text-sm"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleInvest}
-              disabled={isLoading}
-              className="flex-1 py-2 px-4 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg disabled:opacity-50 transition text-sm"
-            >
-              {isLoading ? 'Processing...' : 'Invest Now'}
-            </button>
+                  <div className="grid grid-cols-2 gap-2 my-4 text-sm">
+                    <div className="bg-gradient-to-br from-cyan-50 to-blue-50 p-3 rounded-lg">
+                      <div className="text-gray-600 text-xs mb-1">Valuation</div>
+                      <div className="font-bold text-[#0891B2]">${(prop.valuationUsd / 1000000).toFixed(1)}M</div>
+                    </div>
+                    <div className="bg-gradient-to-br from-cyan-50 to-blue-50 p-3 rounded-lg">
+                      <div className="text-gray-600 text-xs mb-1">Annual Yield</div>
+                      <div className="font-bold text-[#0891B2]">{prop.annualYieldPercentage}%</div>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedProperty(prop)}
+                    className="w-full py-2 px-3 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg transition text-sm"
+                  >
+                    View & Invest
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        )}
       </div>
+
+      {/* Investment Modal */}
+      {showInvestModal && selectedProperty && (
+        <InvestmentModal property={selectedProperty} walletProvider={walletProvider} onClose={() => setShowInvestModal(false)} onSuccess={handleInvest} />
+      )}
+
+      {/* Auth Prompt Modal */}
+      {showAuthPrompt && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Sign in to invest</h2>
+            <p className="text-gray-600 mb-6">
+              Create an account or sign in to start investing in HouseDAO properties.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => {
+                  setShowAuthPrompt(false);
+                  router.push('/signup');
+                }}
+                className="w-full py-3 px-4 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg transition"
+              >
+                Create Account
+              </button>
+              <button
+                onClick={() => {
+                  setShowAuthPrompt(false);
+                  router.push('/login');
+                }}
+                className="w-full py-3 px-4 border-2 border-[#0891B2] text-[#0891B2] font-bold rounded-lg hover:bg-cyan-50 transition"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => setShowAuthPrompt(false)}
+                className="w-full py-3 px-4 text-gray-600 font-semibold rounded-lg hover:bg-gray-100 transition"
+              >
+                Continue Browsing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
