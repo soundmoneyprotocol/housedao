@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, ArrowLeft, Share2, Check, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, ArrowLeft, Share2, Check, AlertCircle, MapPin, Search } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import { useParams } from 'next/navigation';
@@ -17,6 +17,8 @@ interface Property {
   valuationUsd: number;
   annualYieldPercentage: number;
   maxShareSupply: number;
+  latitude?: string;
+  longitude?: string;
 }
 
 export default function BookPropertyPage() {
@@ -35,10 +37,20 @@ export default function BookPropertyPage() {
     phone: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [addressSearch, setAddressSearch] = useState('');
+  const [mapCoordinates, setMapCoordinates] = useState<{ lat: string; lng: string } | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   useEffect(() => {
     fetchProperty();
   }, [propertyId]);
+
+  // Initialize map coordinates from property if available
+  useEffect(() => {
+    if (property?.latitude && property?.longitude) {
+      setMapCoordinates({ lat: property.latitude, lng: property.longitude });
+    }
+  }, [property]);
 
   const fetchProperty = async () => {
     try {
@@ -55,6 +67,45 @@ export default function BookPropertyPage() {
       toast.error('Failed to load property');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddressSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addressSearch.trim()) {
+      toast.error('Please enter an address');
+      return;
+    }
+
+    setSearchLoading(true);
+    try {
+      // Use Google Geocoding API
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addressSearch)}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
+      );
+
+      if (!response.ok) {
+        toast.error('Failed to search address');
+        return;
+      }
+
+      const data = await response.json();
+
+      if (data.results && data.results.length > 0) {
+        const location = data.results[0].geometry.location;
+        setMapCoordinates({
+          lat: location.lat.toString(),
+          lng: location.lng.toString(),
+        });
+        toast.success('Location found on map');
+      } else {
+        toast.error('Address not found. Try a different search.');
+      }
+    } catch (error) {
+      console.error('Error searching address:', error);
+      toast.error('Error searching address');
+    } finally {
+      setSearchLoading(false);
     }
   };
 
@@ -177,6 +228,10 @@ export default function BookPropertyPage() {
     const today = new Date();
     return today.toISOString().split('T')[0];
   };
+
+  const mapUrl = mapCoordinates
+    ? `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3184.2!2d${mapCoordinates.lng}!3d${mapCoordinates.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2s${mapCoordinates.lat},${mapCoordinates.lng}!5e0!3m2!1sen!2sus!4v`
+    : null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-gray-50">
@@ -325,6 +380,71 @@ export default function BookPropertyPage() {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Location Map */}
+              <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-8">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
+                  <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-[#D946EF]" />
+                  Location
+                </h2>
+
+                {/* Address Search */}
+                <form onSubmit={handleAddressSearch} className="mb-6 sm:mb-8">
+                  <label className="block text-xs sm:text-sm font-bold text-gray-700 mb-2">Search Location or Enter Address</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={addressSearch}
+                      onChange={(e) => setAddressSearch(e.target.value)}
+                      placeholder="e.g., '123 Main St, New York, NY' or paste Google Maps link"
+                      className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D946EF] focus:border-transparent text-sm sm:text-base"
+                    />
+                    <button
+                      type="submit"
+                      disabled={searchLoading}
+                      className="px-3 sm:px-4 py-2 sm:py-3 bg-[#D946EF] text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#D946EF]/30 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm sm:text-base"
+                    >
+                      <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="hidden sm:inline">Search</span>
+                    </button>
+                  </div>
+                </form>
+
+                {/* Coordinates */}
+                {mapCoordinates && (
+                  <div className="grid grid-cols-2 gap-4 mb-4 sm:mb-6">
+                    <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                      <p className="text-gray-600 text-xs sm:text-sm">Latitude</p>
+                      <p className="font-mono font-bold text-gray-900 text-sm sm:text-base">{mapCoordinates.lat}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+                      <p className="text-gray-600 text-xs sm:text-sm">Longitude</p>
+                      <p className="font-mono font-bold text-gray-900 text-sm sm:text-base">{mapCoordinates.lng}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Google Map */}
+                {mapUrl && (
+                  <div className="w-full h-64 sm:h-80 rounded-lg overflow-hidden border border-gray-200">
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      loading="lazy"
+                      allowFullScreen
+                      referrerPolicy="no-referrer-when-downgrade"
+                      src={mapUrl}
+                    />
+                  </div>
+                )}
+
+                {!mapCoordinates && (
+                  <div className="w-full h-64 sm:h-80 rounded-lg bg-gray-100 flex items-center justify-center text-gray-600 border border-gray-200">
+                    Search for a location to view the map
+                  </div>
+                )}
               </div>
 
               {/* Contact Information */}
