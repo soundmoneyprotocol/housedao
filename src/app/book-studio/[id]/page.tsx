@@ -289,14 +289,14 @@ export default function BookPropertyPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#D946EF] to-pink-400 text-white py-4 sm:py-6">
+      <div className="bg-white border-b border-gray-200 py-4 sm:py-6">
         <div className="max-w-4xl mx-auto px-4 sm:px-8">
-          <Link href={`/property/${propertyId}`} className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-3 sm:mb-4 text-sm sm:text-base">
+          <Link href={`/property/${propertyId}`} className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             Back to Property
           </Link>
-          <h1 className="text-2xl sm:text-4xl font-bold">{property.name}</h1>
-          <p className="text-white/90 text-sm sm:text-base">{property.city}</p>
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">{property.name}</h1>
+          <p className="text-gray-600 text-sm sm:text-base">{property.city}</p>
         </div>
       </div>
 
