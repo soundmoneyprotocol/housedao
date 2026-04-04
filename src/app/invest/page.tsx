@@ -149,7 +149,7 @@ export default function InvestPage() {
       )}
 
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#D946EF] to-pink-500 p-8 text-white">
+      <div className="bg-gradient-to-r from-[#0891B2] to-pink-500 p-8 text-white">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl font-bold mb-4">HouseDAO: Invest in Real Estate</h1>
           <p className="text-lg opacity-90 mb-4">
@@ -185,7 +185,7 @@ export default function InvestPage() {
                 onChange={(e) =>
                   handleFilterChange(e.target.value, filterMinROI, filterArtistHouses)
                 }
-                className="w-full px-4 py-2 rounded-lg bg-neutral-700 text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#D946EF]"
+                className="w-full px-4 py-2 rounded-lg bg-neutral-700 text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
               />
             </div>
 
@@ -199,7 +199,7 @@ export default function InvestPage() {
                 onChange={(e) =>
                   handleFilterChange(filterCity, parseFloat(e.target.value), filterArtistHouses)
                 }
-                className="w-full px-4 py-2 rounded-lg bg-neutral-700 text-white focus:outline-none focus:ring-2 focus:ring-[#D946EF]"
+                className="w-full px-4 py-2 rounded-lg bg-neutral-700 text-white focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
               >
                 <option value="0">All ROIs</option>
                 <option value="3">3%+</option>
@@ -218,7 +218,7 @@ export default function InvestPage() {
                   onChange={(e) =>
                     handleFilterChange(filterCity, filterMinROI, e.target.checked)
                   }
-                  className="w-5 h-5 rounded bg-neutral-700 border-neutral-600 text-[#D946EF] focus:ring-2 focus:ring-[#D946EF]"
+                  className="w-5 h-5 rounded bg-neutral-700 border-neutral-600 text-[#0891B2] focus:ring-2 focus:ring-[#0891B2]"
                 />
                 <span className="text-sm font-medium text-neutral-300">Artist Houses Only</span>
               </label>
@@ -228,7 +228,7 @@ export default function InvestPage() {
             <div className="flex items-end">
               <Link
                 href="/list-property"
-                className="w-full py-2 px-4 bg-gradient-to-r from-[#D946EF] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#D946EF]/50 transition text-center"
+                className="w-full py-2 px-4 bg-gradient-to-r from-[#0891B2] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#0891B2]/50 transition text-center"
               >
                 + List Property
               </Link>
@@ -283,7 +283,7 @@ interface PropertyCardProps {
 
 function PropertyCard({ property, onInvest }: PropertyCardProps) {
   return (
-    <div className="bg-neutral-800 border border-neutral-700 rounded-xl overflow-hidden hover:border-[#D946EF] transition">
+    <div className="bg-neutral-800 border border-neutral-700 rounded-xl overflow-hidden hover:border-[#0891B2] transition">
       {/* Image */}
       <div className="h-48 bg-gradient-to-br from-neutral-700 to-neutral-900 overflow-hidden">
         {property.imageUrl ? (
@@ -311,7 +311,7 @@ function PropertyCard({ property, onInvest }: PropertyCardProps) {
             </p>
           </div>
           {property.isArtistHouse && (
-            <div className="bg-[#D946EF]/20 text-[#D946EF] px-3 py-1 rounded-full text-xs font-bold">
+            <div className="bg-[#0891B2]/20 text-[#0891B2] px-3 py-1 rounded-full text-xs font-bold">
               Artist House
             </div>
           )}
@@ -327,7 +327,7 @@ function PropertyCard({ property, onInvest }: PropertyCardProps) {
             <div className="grid grid-cols-3 gap-3 mb-4">
               <div className="bg-neutral-700/50 rounded-lg p-3">
                 <p className="text-xs text-neutral-400">Annual ROI</p>
-                <p className="text-xl font-bold text-[#D946EF]">{property.roi.toFixed(1)}%</p>
+                <p className="text-xl font-bold text-[#0891B2]">{property.roi.toFixed(1)}%</p>
               </div>
               <div className="bg-neutral-700/50 rounded-lg p-3">
                 <p className="text-xs text-neutral-400">Share Price</p>
@@ -369,7 +369,7 @@ function PropertyCard({ property, onInvest }: PropertyCardProps) {
               </div>
               <div className="w-full bg-neutral-700 rounded-full h-2 overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-[#D946EF] to-pink-400 h-full transition-all"
+                  className="bg-gradient-to-r from-[#0891B2] to-pink-400 h-full transition-all"
                   style={{
                     width: `${((property.sharesOutstanding || 0) / property.maxShareSupply) * 100}%`,
                   }}
@@ -381,7 +381,7 @@ function PropertyCard({ property, onInvest }: PropertyCardProps) {
               <button
                 onClick={onInvest}
                 disabled={property.availableShares === 0}
-                className="flex-1 py-2 px-4 bg-gradient-to-r from-[#D946EF] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#D946EF]/50 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
+                className="flex-1 py-2 px-4 bg-gradient-to-r from-[#0891B2] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#0891B2]/50 disabled:opacity-50 disabled:cursor-not-allowed transition text-sm"
               >
                 <Share2 className="w-4 h-4 inline mr-2" />
                 Invest
@@ -401,17 +401,17 @@ function PropertyCard({ property, onInvest }: PropertyCardProps) {
             <div className="grid grid-cols-2 gap-3 mb-5">
               <div className="bg-neutral-700/50 rounded-lg p-3">
                 <p className="text-xs text-neutral-400">Hourly Rate</p>
-                <p className="text-lg font-bold text-[#D946EF]">${property.hourlyRate}</p>
+                <p className="text-lg font-bold text-[#0891B2]">${property.hourlyRate}</p>
               </div>
               <div className="bg-neutral-700/50 rounded-lg p-3">
                 <p className="text-xs text-neutral-400">Daily Rate</p>
-                <p className="text-lg font-bold text-[#D946EF]">${property.dailyRate}</p>
+                <p className="text-lg font-bold text-[#0891B2]">${property.dailyRate}</p>
               </div>
             </div>
 
             <Link
               href={`/book-studio/${property.id}`}
-              className="w-full py-3 px-4 bg-gradient-to-r from-[#D946EF] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#D946EF]/50 transition text-center flex items-center justify-center gap-2"
+              className="w-full py-3 px-4 bg-gradient-to-r from-[#0891B2] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#0891B2]/50 transition text-center flex items-center justify-center gap-2"
             >
               <Clock className="w-4 h-4" />
               Book Now
@@ -506,7 +506,7 @@ function InvestmentModal({ property, walletProvider, onClose, onSuccess }: Inves
           </div>
           <div className="flex justify-between">
             <span className="text-neutral-400">Annual ROI:</span>
-            <span className="text-[#D946EF] font-bold">{property.roi.toFixed(1)}%</span>
+            <span className="text-[#0891B2] font-bold">{property.roi.toFixed(1)}%</span>
           </div>
         </div>
 
@@ -525,7 +525,7 @@ function InvestmentModal({ property, walletProvider, onClose, onSuccess }: Inves
               type="number"
               value={shares}
               onChange={(e) => setShares(Math.min(property.availableShares, parseInt(e.target.value) || 0))}
-              className="flex-1 px-4 py-2 bg-neutral-700 text-white rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-[#D946EF]"
+              className="flex-1 px-4 py-2 bg-neutral-700 text-white rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-[#0891B2]"
             />
             <button
               onClick={() => setShares(Math.min(property.availableShares, shares + 1))}
@@ -557,7 +557,7 @@ function InvestmentModal({ property, walletProvider, onClose, onSuccess }: Inves
           <button
             onClick={handleInvest}
             disabled={isLoading}
-            className="flex-1 py-2 px-4 bg-gradient-to-r from-[#D946EF] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#D946EF]/50 disabled:opacity-50 transition"
+            className="flex-1 py-2 px-4 bg-gradient-to-r from-[#0891B2] to-pink-400 text-white font-bold rounded-lg hover:shadow-lg hover:shadow-[#0891B2]/50 disabled:opacity-50 transition"
           >
             {isLoading ? 'Processing...' : 'Invest Now'}
           </button>
