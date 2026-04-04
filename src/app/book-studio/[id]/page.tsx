@@ -43,7 +43,7 @@ export default function BookPropertyPage() {
   const [mapCoordinates, setMapCoordinates] = useState<{ lat: string; lng: string } | null>(null);
   const [searchLoading, setSearchLoading] = useState(false);
   const [vvsMembership, setVvsMembership] = useState(false);
-  const VVS_MEMBERSHIP_FEE = 299;
+  const VVS_MEMBERSHIP_FEE = 4500;
 
 
   useEffect(() => {
