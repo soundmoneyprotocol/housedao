@@ -48,14 +48,49 @@ export default function InvestPage() {
   useEffect(() => {
     const initializeWalletProvider = () => {
       try {
-        if (typeof window !== 'undefined' && (window as any).ethereum) {
-          setWalletProvider((window as any).ethereum);
-          setWalletError(null);
+        if (typeof window === 'undefined') return;
+
+        // Suppress wallet extension conflict errors
+        const originalError = console.error;
+        const errorFilter = (message: string) => {
+          if (
+            message.includes('Cannot redefine property') ||
+            message.includes('Cannot set property ethereum') ||
+            message.includes('listener indicated an asynchronous response')
+          ) {
+            return; // Suppress these errors
+          }
+          originalError(message);
+        };
+        console.error = errorFilter as any;
+
+        // Check if window.ethereum exists and is usable
+        const ethereum = (window as any).ethereum;
+        if (ethereum && typeof ethereum.request === 'function') {
+          // Validate provider is working with a simple request
+          Promise.race([
+            ethereum.request({ method: 'net_version' }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 500))
+          ]).then(
+            () => {
+              setWalletProvider(ethereum);
+              setWalletError(null);
+              console.error = originalError;
+            },
+            () => {
+              // Provider not responding, disable Web3
+              setWalletProvider(null);
+              setWalletError(null); // Silent fallback
+              console.error = originalError;
+            }
+          );
+        } else {
+          console.error = originalError;
         }
       } catch (error) {
-        console.warn('Wallet provider initialization warning:', error);
-        setWalletError('Wallet extension conflict detected. App will work without Web3.');
+        console.warn('Wallet provider initialization skipped:', error);
         setWalletProvider(null);
+        setWalletError(null);
       }
     };
 
@@ -449,11 +484,18 @@ function InvestmentModal({ property, walletProvider, onClose, onSuccess }: Inves
       let accountAddress = null;
       if (walletProvider) {
         try {
-          const accounts = await walletProvider.request({ method: 'eth_requestAccounts' });
+          const accounts = await Promise.race([
+            walletProvider.request({ method: 'eth_requestAccounts' }),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Wallet timeout')), 3000))
+          ]);
           accountAddress = accounts[0];
-        } catch (walletError) {
-          console.warn('Wallet connection failed:', walletError);
-          toast.error('Wallet not available. Proceeding with fiat payment.');
+        } catch (walletError: any) {
+          // Silently fall back to fiat payment on any wallet error
+          const errorMsg = walletError?.message || String(walletError);
+          if (!errorMsg.includes('timeout') && !errorMsg.includes('User rejected')) {
+            console.warn('Wallet connection failed:', walletError);
+          }
+          // No toast - silently proceed with fiat payment
         }
       }
 
