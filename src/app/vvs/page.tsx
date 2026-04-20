@@ -302,7 +302,7 @@ export default function VVSPage() {
                 "You value curated experiences over standard travel",
                 "You willing to invest $2,500+ for transformational experience",
                 "You open to authentic connection with others",
-                "You want expert planning (not DIY booking)",
+                "You want personal concierge accompaniment to your wellness experience",
                 "You appreciate intentional design & attention to detail",
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-3 text-gray-700">
