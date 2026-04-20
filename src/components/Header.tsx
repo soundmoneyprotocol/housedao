@@ -18,6 +18,7 @@ export default function Header() {
 
   const navLinks = [
     { label: 'Invest', href: '/invest' },
+    { label: 'VVS Flawless', href: '/vvs' },
     { label: 'Book', href: '/recently-listed' },
     { label: 'Membership', href: '/membership' },
     { label: 'About', href: '/about' },
