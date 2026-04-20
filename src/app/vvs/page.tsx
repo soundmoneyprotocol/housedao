@@ -58,7 +58,7 @@ const whatIncluded = [
   'Full concierge service',
   'WiFi + complete connectivity',
   '6–8 guests max (intimate, not crowded)',
-  '1-minute walk to Playa Organo beach',
+  '1-minute walk to the beach',
 ];
 
 export default function VVSPage() {
@@ -180,7 +180,7 @@ export default function VVSPage() {
                     <span></span> Full gym + outdoor kitchen
                   </p>
                   <p className="flex items-center gap-2">
-                    <span></span> 1-minute walk to Playa Organo beach
+                    <span></span> 1-minute walk to the beach
                   </p>
                 </div>
               </div>
@@ -288,51 +288,29 @@ export default function VVSPage() {
         </div>
       </section>
 
-      {/* Who It's For / Not For */}
+      {/* Who It's For */}
       <section className="py-20 px-4 bg-gray-50">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold text-gray-900 mb-12 text-center">Is VVS Right for You?</h2>
 
-          <div className="grid md:grid-cols-2 gap-12">
-            <div>
-              <h3 className="text-2xl font-bold text-green-600 mb-6 flex items-center gap-2">
-                <Check className="w-6 h-6" /> You Ready If:
-              </h3>
-              <ul className="space-y-3">
-                {[
-                  "You value curated experiences over standard travel",
-                  "You willing to invest $2,500+ for transformation",
-                  "You open to authentic connection with others",
-                  "You want expert planning (not DIY booking)",
-                  "You appreciate intentional design & attention to detail",
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3 text-gray-700">
-                    <span className="text-green-500 font-bold mt-1"></span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-2xl font-bold text-red-600 mb-6 flex items-center gap-2">
-                <ChevronDown className="w-6 h-6" /> We Not a Fit If:
-              </h3>
-              <ul className="space-y-3">
-                {[
-                  "You need budget accommodation (<$100/night)",
-                  "You want complete flexibility on dates/group size",
-                  "You prefer party/nightlife focus",
-                  "You expect Airbnb service levels",
-                  "You looking for a standard hotel experience",
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-3 text-gray-700">
-                    <span className="text-red-500 font-bold mt-1"></span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
+          <div className="max-w-2xl mx-auto">
+            <h3 className="text-2xl font-bold text-green-600 mb-6 flex items-center gap-2">
+              <Check className="w-6 h-6" /> You Ready If:
+            </h3>
+            <ul className="space-y-3">
+              {[
+                "You value curated experiences over standard travel",
+                "You willing to invest $2,500+ for transformational experience",
+                "You open to authentic connection with others",
+                "You want expert planning (not DIY booking)",
+                "You appreciate intentional design & attention to detail",
+              ].map((item, i) => (
+                <li key={i} className="flex items-start gap-3 text-gray-700">
+                  <span className="text-green-500 font-bold mt-1"></span>
+                  {item}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
