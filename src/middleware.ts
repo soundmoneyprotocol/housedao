@@ -30,16 +30,7 @@ export async function middleware(request: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // Protected routes - require authentication
-  const protectedRoutes = ['/portfolio', '/bookings', '/messages', '/settings'];
-  const isProtectedRoute = protectedRoutes.some(route => request.nextUrl.pathname.startsWith(route));
-
-  if (isProtectedRoute && !session) {
-    // Redirect unauthenticated users to login
-    return NextResponse.redirect(new URL('/login', request.url));
-  }
-
-  // Redirect authenticated users away from login/signup
+  // Only redirect authenticated users away from login/signup to portfolio
   if ((request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup') && session) {
     return NextResponse.redirect(new URL('/portfolio', request.url));
   }
@@ -49,10 +40,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/portfolio',
-    '/bookings',
-    '/messages',
-    '/settings',
     '/login',
     '/signup',
   ],

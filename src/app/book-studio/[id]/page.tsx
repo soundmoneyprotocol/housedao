@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, ArrowLeft, Share2, Check, AlertCircle, MapPin, Search, MessageCircle, Crown } from 'lucide-react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Property {
   id: string;
@@ -23,6 +24,8 @@ interface Property {
 
 export default function BookPropertyPage() {
   const params = useParams();
+  const router = useRouter();
+  const { user } = useAuth();
   const propertyId = params.id as string;
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,6 +47,7 @@ export default function BookPropertyPage() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [vvsMembership, setVvsMembership] = useState(false);
   const VVS_MEMBERSHIP_FEE = 4500;
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
 
   useEffect(() => {
@@ -201,6 +205,12 @@ export default function BookPropertyPage() {
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check if user is authenticated first
+    if (!user) {
+      setShowAuthPrompt(true);
+      return;
+    }
 
     if (!selectedDate || !formData.name || !formData.email || !formData.phone) {
       toast.error('Please fill in all fields');
@@ -664,6 +674,44 @@ export default function BookPropertyPage() {
           </div>
         </div>
       </div>
+
+      {/* Auth Prompt Modal */}
+      {showAuthPrompt && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Sign in to book</h2>
+            <p className="text-gray-600 mb-6">
+              Create an account or sign in to book this property.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => {
+                  setShowAuthPrompt(false);
+                  router.push('/signup');
+                }}
+                className="w-full py-3 px-4 bg-gradient-to-r from-[#0891B2] to-cyan-400 text-white font-bold rounded-lg hover:shadow-lg transition"
+              >
+                Create Account
+              </button>
+              <button
+                onClick={() => {
+                  setShowAuthPrompt(false);
+                  router.push('/login');
+                }}
+                className="w-full py-3 px-4 border-2 border-[#0891B2] text-[#0891B2] font-bold rounded-lg hover:bg-cyan-50 transition"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => setShowAuthPrompt(false)}
+                className="w-full py-3 px-4 text-gray-600 font-semibold rounded-lg hover:bg-gray-100 transition"
+              >
+                Continue Browsing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
